@@ -36,7 +36,7 @@ while True:
         posts = fetch_posts()
         if len(posts) >= 1:
             average_sleep_time = like_comment_sum(posts)
-            for x in posts:
+            for x in random.sample(posts, len(posts)):
                 print(average_sleep_time)
                 email = get_random_user_email()
                 print('emailed changed')
@@ -64,6 +64,7 @@ while True:
                     decrement_likes_comments(post_id, "needed_comments")
                     time.sleep(average_sleep_time)
                     continue
+
                 while needed_comments <= 0 and needed_likes >= 1:
                     print(f"Likes left: {needed_likes}")
                     email = get_random_user_email()

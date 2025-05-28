@@ -119,21 +119,22 @@ def create_post_db():
         space_id INTEGER,
         links TEXT NOT NULL,
         needed_likes INTEGER,
-        needed_comments INTEGER
+        needed_comments INTEGER,
+        post_category TEXT
     )
     """)
     return conn, cursor
 
 
-def insert_post(email, original_title, original_description, ai_title, ai_description, post_id, space_id, links, needed_likes, needed_comments):
+def insert_post(email, original_title, original_description, ai_title, ai_description, post_id, space_id, links, needed_likes, needed_comments, post_category):
     conn, cursor = create_post_db()
     try:
 
         cursor.execute("""
-        INSERT INTO posts (email, original_title, original_description, ai_title, ai_description, post_id, space_id, links, needed_likes, needed_comments)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO posts (email, original_title, original_description, ai_title, ai_description, post_id, space_id, links, needed_likes, needed_comments, post_category)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 
-        """, (email, original_title, original_description, ai_title, ai_description, post_id, space_id, links, needed_likes, needed_comments))
+        """, (email, original_title, original_description, ai_title, ai_description, post_id, space_id, links, needed_likes, needed_comments, post_category))
         conn.commit()
         print("Data inserted successfully!")
     except sqlite3.Error as e:
