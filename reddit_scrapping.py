@@ -180,7 +180,7 @@ def main():
     print(f"Finished processing.")
     if conn:
         conn.close()
-
+main()
 schedule.every().day.at("04:00").do(main)
 
 while True:

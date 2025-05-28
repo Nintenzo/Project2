@@ -46,7 +46,11 @@ while True:
                 needed_comments = x[10]
                 response = like_post(post_id, email)
                 while response['message'] != "Post has been liked":
+                    if response['message'] == "Oops! couldn't find the post you requested.":
+                        break
                     email = get_random_user_email()
+                    if response['message'] == "Oops! couldn't find the post you requested.":
+                        continue
                     response = like_post(post_id, email)
                 decrement_likes_comments(post_id, "needed_likes")
                     

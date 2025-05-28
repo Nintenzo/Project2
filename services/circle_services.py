@@ -254,9 +254,10 @@ Description: {description}
         time.sleep(10)
         response = requests.post(url, headers=circle_headers, data=payload)
     if response.status_code == 200:
-        print("Comment Created")
-        last_seen(email=user_email)
-        return body
+        if response.json()['success'] == True:
+            print("Comment Created")
+            last_seen(email=user_email)
+            return body
     else:
         print("Comment Not Created")
         return None
