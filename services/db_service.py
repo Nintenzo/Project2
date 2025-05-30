@@ -144,7 +144,7 @@ def insert_post(email, original_title, original_description, ai_title, ai_descri
 def fetch_posts():
     conn, cursor = create_post_db()
     cursor.execute("""
-    SELECT * FROM posts
+    SELECT post_id, space_id, needed_likes, needed_comments FROM posts
     WHERE needed_likes > 0""")
     result = cursor.fetchall()
     return result
@@ -186,7 +186,7 @@ def get_post_data(post_id):
     """Fetches post data by post_id."""
     conn, cursor = create_post_db()
     cursor.execute("""
-        SELECT * FROM posts
+        SELECT email, post_category, ai_title, ai_description FROM posts
         WHERE post_id = ?
     """, (post_id,))
     result = cursor.fetchone()

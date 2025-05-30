@@ -34,8 +34,10 @@ def like_with_no_api(email, post_id, remove=False):
 			}
 		)
     if response.status_code == 200:
+        session.close()
         return 'Post has been liked'
     else:
+        session.close()
         raise Exception('post not liked')
 
 
@@ -74,6 +76,8 @@ def comment_with_no_api(email, post_id, comment):
         }
     )
     if response.status_code == 201:
+        session.close()
         return 'ok'
     else:
+        session.close()
         raise Exception('comment not posted')

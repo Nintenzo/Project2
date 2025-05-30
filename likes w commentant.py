@@ -4,7 +4,9 @@ from services.circle_services import like_post, comment_on_post
 from services.like_comments_with_no_api import like_with_no_api
 import random
 import time
+from pympler.asizeof import asizeof
 from datetime import datetime
+import gc
 
 def extract_opening(text, num_words=10):
     if not text:
@@ -16,6 +18,7 @@ def extract_opening(text, num_words=10):
             return ' '.join(opening.split()[:num_words])
         return opening
     return ' '.join(text.split()[:num_words])
+
 
 def like_comment_sum(posts):
     total_likes = 0
@@ -32,19 +35,22 @@ def like_comment_sum(posts):
     return average_sleep_time
 
 previous_openings = {}
+CAP = 128_000_000
 while True:
     try:
         posts = fetch_posts()
         if len(posts) >= 1:
             average_sleep_time = like_comment_sum(posts)
             for x in random.sample(posts, len(posts)):
+                if asizeof(previous_openings) > CAP:
+                    previous_openings = {}
                 print(average_sleep_time)
                 email = get_random_user_email()
                 print('emailed changed')
-                post_id = x[6]
-                space_id = x[7]
-                needed_likes = x[9]
-                needed_comments = x[10]
+                post_id = x[0]
+                space_id = x[1]
+                needed_likes = x[2]
+                needed_comments = x[3]
                 try:
                     response = like_with_no_api(email, post_id)
                     if response == 'Post has been liked':
@@ -93,6 +99,7 @@ while True:
                         while response['message'] != "Post has been liked":
                             email = get_random_user_email()
                             response = like_post(post_id, email)
+                            gc.collect()
                             time.sleep(1)
                     decrement += 1
                     needed_likes -= 1
@@ -101,7 +108,8 @@ while True:
                         decrement = 0
                 if decrement > 0:
                     decrement_likes_comments(post_id, "needed_likes", decrement=decrement)
-                    #needed_likes = fetch_post_byID(post_id)[9] bn3ml track lel likes localy f di useless nek
+                    #needed_likes = fetch_post_byID(post_id)[0] bn3ml track lel likes localy f di useless nek
+                    gc.collect()
         else:
             previous_openings = {}
             print(datetime.now())

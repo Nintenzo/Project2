@@ -91,12 +91,12 @@ def comment_on_post(space_id, post_id, user_email, previous_openings=None):
     post_data = get_post_data(post_id)
     while user_email == post_data[0]:
         user_email = get_random_user_email()
-    post_category = post_data[-1]
+    post_category = post_data[1]
     gender = get_gender(user_email)
     final_identity = gender[0][0]
     original_identity = gender[0][1]
-    title = post_data[3]
-    description = post_data[4]
+    title = post_data[2]
+    description = post_data[3]
 
     message = f"""
 Title: {title}

@@ -22,27 +22,36 @@ import cloudscraper
 
 
 def fresh_cookies(email):
-	pw = get_user_password(email)[0]
-	payload = {
-		"user": {
-			"email": email,
-			"password": pw,
-			"community_id": ''
-		},
-		"source": None,
-		"chat_bot_session_id": ""
-	}
-	login_url = "https://login.circle.so/sign_in?"
+    pw = get_user_password(email)[0]
+    payload = {
+        "user": {
+            "email": email,
+            "password": pw,
+            "community_id": ""
+        },
+        "source": None,
+        "chat_bot_session_id": ""
+    }
+    login_url = "https://login.circle.so/sign_in?"
 
-	scraper = cloudscraper.create_scraper()
-	scraper.headers.update({
-		"accept": "application/json"
-	})
-	resp = scraper.post(login_url, json=payload)
-	if resp.status_code != 200 or 'redirect_url' not in resp.json():
-		print("Login failed or bad response")
-		print(resp.text)
-		return {}
-	redirect_url = resp.json()['redirect_url']
-	scraper.get(redirect_url)
-	return scraper.cookies.get_dict()
+    scraper = cloudscraper.create_scraper()
+    try:
+        scraper.headers.update({
+            "accept": "application/json"
+        })
+        resp = scraper.post(login_url, json=payload)
+        try:
+            if resp.status_code != 200 or 'redirect_url' not in resp.json():
+                print("Login failed or bad response")
+                print(resp.text)
+                return {}
+            redirect_url = resp.json()['redirect_url']
+            redirect_resp = scraper.get(redirect_url)
+            cookies = scraper.cookies.get_dict()
+            return cookies
+        finally:
+            resp.close()
+            if 'redirect_resp' in locals():
+                redirect_resp.close()
+    finally:
+        scraper.close()
