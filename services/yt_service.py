@@ -3,28 +3,40 @@ import urllib.parse
 import random
 import os
 from .db_service import check_if_posted, create_post_db
-from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled, NoTranscriptFound, VideoUnavailable
+from supadata import Supadata
+#from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled, NoTranscriptFound, VideoUnavailable
 from dotenv import load_dotenv
 import time
 load_dotenv()
 
+supadata = Supadata(api_key=os.getenv("SUPADATA_KEY"))
 
 def get_transcript(video_id):
-    for x in range(3):
-        try:
-            transcript = YouTubeTranscriptApi.get_transcript(video_id, languages=['en-US', 'en-GB', 'en-AU', 'en-CA', 'en'])
-            message = ' '.join(entry['text'] for entry in transcript)
-            p40 = int(len(message) * 0.5)
-            if len(message) >= 20000:
-                return message[:10000]
-            else:
-                return message[:p40]
-        except (NoTranscriptFound, TranscriptsDisabled, VideoUnavailable):
-            print("error in getting video transcript")
-            return "error"
-        except Exception as e:
-            print(f"An unexpected error occurred: {e}")
-            time.sleep(10)
+    # for x in range(3):
+    #     try:
+    #         transcript = YouTubeTranscriptApi.get_transcript(video_id, languages=['en-US', 'en-GB', 'en-AU', 'en-CA', 'en'])
+    #         message = ' '.join(entry['text'] for entry in transcript)
+    #         p40 = int(len(message) * 0.5)
+    #         if len(message) >= 20000:
+    #             return message[:10000]
+    #         else:
+    #             return message[:p40]
+    #     except (NoTranscriptFound, TranscriptsDisabled, VideoUnavailable):
+    #         print("error in getting video transcript")
+    #         return "error"
+    #     except Exception as e:
+    #         print(f"An unexpected error occurred: {e}")
+    #         time.sleep(10)
+    try:
+        transcript = supadata.youtube.transcript(video_id=video_id, lang="en",text=True)
+        p40 = int(len(transcript.content) * 0.5)
+        if len(transcript.content) >= 20000:
+            return transcript.content[:10000]
+        else:
+            return transcript.content[:p40]
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+        return "error"
 
 def get_yt_link(keyword):
     try:
@@ -51,7 +63,6 @@ def get_yt_link(keyword):
                 [links['links'].pop(y) for y, x in enumerate(links['links']) if x[0] == id[0]]
                 continue
             break
-
         return content
     except Exception as e:
         print(e)

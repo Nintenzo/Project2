@@ -55,6 +55,8 @@ while True:
                 decrement_likes_comments(post_id, "needed_likes")
                     
                 if needed_comments >= 1:
+                    if random.randint(0, 100) <= 25:
+                        email = get_random_user_email()
                     comment_body = comment_on_post(space_id, post_id, email, previous_openings=previous_openings)
                     if comment_body:
                         opening = extract_opening(comment_body)

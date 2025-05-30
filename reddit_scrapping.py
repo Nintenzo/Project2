@@ -84,7 +84,7 @@ def main():
                     keyword = random.choice(keywords)
                     chance = random.randint(10,20)
                     reddit_chance = 100 - chance
-                    res = random.randint(1,100)
+                    res = random.randint(95,100)
                     print(f"Searching keyword: {keyword}")
                     for post in subreddit.search(keyword, sort=random.choice(["new", "relevance"])):
                         if  res <= reddit_chance:
@@ -125,7 +125,8 @@ def main():
                         else:
                             youtube = True
                             content = get_yt_link(keyword=keyword)
-                            if content == 'false':
+                            if content == 'false' or len(content['transcript']) <= 5:
+                                
                                 continue
                         try:
                             random_email = get_random_user_email()

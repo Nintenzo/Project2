@@ -283,11 +283,11 @@ while True:
         member_id, public_uid, community_member_id = create_person()
         cookies_list = send_otp(mailstring, pw)
         remember_user_token, user_session_identifier = "", ""
-        true_chance = round(random.uniform(0.2,0.3), 2)
+        true_chance = round(random.uniform(0.15,0.25), 2)
         false_chance = round(1 - true_chance, 2)
         introduction = random.choices([True, False], [true_chance, false_chance])[0]
         if introduction:
-            introduction_date = datetime.now().date() + timedelta(days=random.randint(0,30))
+            introduction_date = datetime.now().date() + timedelta(days=random.randint(0,66))
         else:
             introduction_date = 'NULL'
         insert_users(fullname, mailstring, pw, final_identity, original_gender, pronouns, bio, headline, city, avatar, remember_user_token, user_session_identifier, member_id, public_uid, community_member_id, introduction, introduction_date)
