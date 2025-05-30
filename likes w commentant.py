@@ -52,6 +52,7 @@ while True:
                         time.sleep(1)
                         pass
                 except Exception as e:
+                    print(e)
                     response = like_post(post_id, email)
                     if response['message'] == "Oops! couldn't find the post you requested.":
                         continue

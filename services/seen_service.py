@@ -1,5 +1,5 @@
 from services.db_service import get_user_password
-import requests
+import cloudscraper
 
 # def last_seen(email):  el seen keda keda bit3ml automatic m3 el likes w comments f di useless bardo
 #     try:
@@ -20,24 +20,29 @@ import requests
 #     except Exception:
 #         pass
 
-def fresh_cookies(email):
-    pw = get_user_password(email)[0]
-    payload = {
-        "user": {
-            "email": email,
-            "password": pw,
-            "community_id": ''
-        },
-        "source": None,
-        "chat_bot_session_id": ""
-    }
 
-    session = requests.Session()
-    link = "https://login.circle.so/sign_in?"
-    session.headers.update({
-            "accept": "application/json",
-        })
-    response = session.post(link, json=payload)
-    link = response.json()['redirect_url']
-    session.get(link, json=payload)
-    return session.cookies['remember_user_token'], session.cookies['user_session_identifier']
+def fresh_cookies(email):
+	pw = get_user_password(email)[0]
+	payload = {
+		"user": {
+			"email": email,
+			"password": pw,
+			"community_id": ''
+		},
+		"source": None,
+		"chat_bot_session_id": ""
+	}
+	login_url = "https://login.circle.so/sign_in?"
+
+	scraper = cloudscraper.create_scraper()
+	scraper.headers.update({
+		"accept": "application/json"
+	})
+	resp = scraper.post(login_url, json=payload)
+	if resp.status_code != 200 or 'redirect_url' not in resp.json():
+		print("Login failed or bad response")
+		print(resp.text)
+		return {}
+	redirect_url = resp.json()['redirect_url']
+	scraper.get(redirect_url)
+	return scraper.cookies.get_dict()

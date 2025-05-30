@@ -278,7 +278,6 @@ Video Link: {link}
         response = requests.request("POST", circle_url, headers=circle_headers, data=payload)
     if response.status_code == 200:
         print("Post Created")
-        last_seen(email)
         data = response.json() 
         post_id = data['post']['id']
         needed_likes = random.randint(60, 400)

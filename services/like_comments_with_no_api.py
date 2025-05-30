@@ -1,6 +1,7 @@
 import tls_client
 from services.seen_service import fresh_cookies
 
+
 def like_with_no_api(email, post_id, remove=False):
     cookies = fresh_cookies(email)
     headers = {
