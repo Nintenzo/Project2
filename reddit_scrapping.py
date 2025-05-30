@@ -165,10 +165,7 @@ def main():
                         print("--- Done with this keyword ---")
                         sleep_time = random.randint(avg_sleep_time - 900, avg_sleep_time + 250)
                         print(sleep_time)
-                        start_time = time.time()
-                        while time.time() - start_time < sleep_time:
-                            email = get_random_user_email()
-                            last_seen(email)
+                        time.sleep(sleep_time)
                         break
 
             except praw.exceptions.PRAWException as e:

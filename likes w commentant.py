@@ -1,7 +1,7 @@
-from services.db_service import fetch_posts, get_random_user_email, decrement_likes_comments, fetch_post_byID
+from services.db_service import fetch_posts, get_random_user_email, decrement_likes_comments
 from services.until4am import sleep_until_4am
 from services.circle_services import like_post, comment_on_post
-from services.like_withno_api import like_withno_api
+from services.like_comments_with_no_api import like_with_no_api
 import random
 import time
 from datetime import datetime
@@ -46,24 +46,26 @@ while True:
                 needed_likes = x[9]
                 needed_comments = x[10]
                 try:
-                    response = like_withno_api(email, post_id)
+                    response = like_with_no_api(email, post_id)
                     if response == 'Post has been liked':
                         print('post has been liked with no api call')
+                        time.sleep(1)
                         pass
                 except Exception as e:
                     response = like_post(post_id, email)
+                    if response['message'] == "Oops! couldn't find the post you requested.":
+                        continue
                     while response['message'] != "Post has been liked":
-                        if response['message'] == "Oops! couldn't find the post you requested.":
-                            break
                         email = get_random_user_email()
-                        if response['message'] == "Oops! couldn't find the post you requested.":
-                            continue
                         response = like_post(post_id, email)
+                        time.sleep(1)
                 decrement_likes_comments(post_id, "needed_likes")
-                    
+                needed_likes -= 1
                 if needed_comments >= 1:
-                    if random.randint(0, 100) <= 25:
+                    if random.randint(0, 100) <= 30:
                         email = get_random_user_email()
+                    if random.randint(0, 100) <= 10:
+                        continue
                     comment_body = comment_on_post(space_id, post_id, email, previous_openings=previous_openings)
                     if comment_body:
                         opening = extract_opening(comment_body)
@@ -73,16 +75,32 @@ while True:
                     decrement_likes_comments(post_id, "needed_comments")
                     time.sleep(average_sleep_time)
                     continue
-
+                decrement = 0
                 while needed_comments <= 0 and needed_likes >= 1:
                     print(f"Likes left: {needed_likes}")
                     email = get_random_user_email()
-                    response = like_post(post_id, email)
-                    while response['message'] != "Post has been liked":
-                        email = get_random_user_email()
+                    try:
+                        response = like_with_no_api(email, post_id)
+                        if response == 'Post has been liked':
+                            print('post has been liked with no api call')
+                            time.sleep(1)
+                            pass
+                    except Exception as e:
                         response = like_post(post_id, email)
-                    decrement_likes_comments(post_id, "needed_likes")
-                    needed_likes = fetch_post_byID(post_id)[9]
+                        if response['message'] == "Oops! couldn't find the post you requested.":
+                            break
+                        while response['message'] != "Post has been liked":
+                            email = get_random_user_email()
+                            response = like_post(post_id, email)
+                            time.sleep(1)
+                    decrement += 1
+                    needed_likes -= 1
+                    if decrement >= 50:
+                        decrement_likes_comments(post_id, "needed_likes", decrement=decrement)
+                        decrement = 0
+                if decrement > 0:
+                    decrement_likes_comments(post_id, "needed_likes", decrement=decrement)
+                    #needed_likes = fetch_post_byID(post_id)[9] bn3ml track lel likes localy f di useless nek
         else:
             previous_openings = {}
             print(datetime.now())

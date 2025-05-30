@@ -1,7 +1,8 @@
 import requests
 import openai
 from .db_service import insert_post, get_random_user_email, get_post_data
-from .sentiment import generate_sentiment
+from services.like_comments_with_no_api import like_with_no_api
+from services.like_comments_with_no_api import comment_with_no_api
 from dotenv import load_dotenv
 from .db_service import get_gender
 from .seen_service import last_seen
@@ -63,13 +64,12 @@ def like_post(post_id, email):
         data = requests.post(url,headers=circle_headers)
     if data.json()['message'] == "Post has been liked":
         print(data.json()['message'])
-        last_seen(email=email)
     else:
         print(data.json()['message'])
     return data.json()
 
 
-# def get_post_data(post_id, community_id):
+# def get_post_data(post_id, community_id): bfetch el data mn el database di useless delwaty
 #     """
 #     This function fetches the post data from Circle API.
 #     It returns the post data in JSON format.
@@ -117,14 +117,14 @@ Description: {description}
                "body": body,
                "user_email": user_email}
     try:
-        response = requests.post(url, headers=circle_headers, data=payload)
+        response = comment_with_no_api(email=user_email, post_id=post_id, comment=body)
+        print("comment created with no api call")
+        return body
     except Exception:
-        time.sleep(10)
         response = requests.post(url, headers=circle_headers, data=payload)
     if response.status_code == 200:
         if response.json()['success'] == True:
             print("Comment Created")
-            last_seen(email=user_email)
             return body
     else:
         print("Comment Not Created")
@@ -297,4 +297,9 @@ Post Description: {description}
 Transcript: {original_description}
 """
         insert_post(email, original_title, original_description, title, description, post_id, space_id, url, needed_likes=needed_likes, needed_comments=needed_comments, post_category=post_category)
+        try:
+            like_with_no_api(email, post_id, remove=True)
+        except Exception as e:
+            print(f'error in mimick {e}')
+            pass
         return "not false"

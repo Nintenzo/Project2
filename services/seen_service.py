@@ -1,24 +1,24 @@
 from services.db_service import get_user_password
-import time
 import requests
-def last_seen(email):
-    try:
-        remember_user_token, user_session_identifier = fresh_cookies(email)
-        url = "https://tubiit.circle.so/feed"
-        cookies = {
-            "remember_user_token": remember_user_token,
-            "user_session_identifier": user_session_identifier,
-        }
-        try:
-            requests.get(url, cookies=cookies)
-        except Exception:
-            time.sleep(10)
-            requests.get(url, cookies=cookies)
-        time.sleep(2)
-        print("last seen mimicked")
-        return
-    except Exception:
-        pass
+
+# def last_seen(email):  el seen keda keda bit3ml automatic m3 el likes w comments f di useless bardo
+#     try:
+#         remember_user_token, user_session_identifier = fresh_cookies(email)
+#         url = "https://tubiit.circle.so/feed"
+#         cookies = {
+#             "remember_user_token": remember_user_token,
+#             "user_session_identifier": user_session_identifier,
+#         }
+#         try:
+#             requests.get(url, cookies=cookies)
+#         except Exception:
+#             time.sleep(10)
+#             requests.get(url, cookies=cookies)
+#         time.sleep(2)
+#         print("last seen mimicked")
+#         return
+#     except Exception:
+#         pass
 
 def fresh_cookies(email):
     pw = get_user_password(email)[0]

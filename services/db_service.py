@@ -194,11 +194,11 @@ def get_post_data(post_id):
     return result
 
 
-def decrement_likes_comments(post_id, value):
+def decrement_likes_comments(post_id, value, decrement=1):
     conn, cursor = create_post_db()
     cursor.execute(f"""
     UPDATE posts
-    SET {value} = {value} - 1
+    SET {value} = {value} - {decrement}
     WHERE post_id = {post_id}
     """)
     conn.commit()
