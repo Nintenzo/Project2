@@ -5,7 +5,6 @@ from services.like_comments_with_no_api import like_with_no_api
 from services.like_comments_with_no_api import comment_with_no_api
 from dotenv import load_dotenv
 from .db_service import get_gender
-from .seen_service import last_seen
 from .seo_service import get_seo
 from settings.system_prompts import get_system_prompt
 from math import floor

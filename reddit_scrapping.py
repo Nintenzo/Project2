@@ -8,7 +8,6 @@ import random
 from dotenv import load_dotenv
 from get_reddits import get_subs
 from settings.spaces_keywords import subreddits as all_subreddits
-from services.seen_service import last_seen
 from services.yt_service import get_yt_link
 load_dotenv()
 
