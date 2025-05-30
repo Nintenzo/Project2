@@ -1,6 +1,7 @@
 from services.db_service import fetch_posts, get_random_user_email, decrement_likes_comments, fetch_post_byID
 from services.until4am import sleep_until_4am
 from services.circle_services import like_post, comment_on_post
+from services.like_withno_api import like_withno_api
 import random
 import time
 from datetime import datetime
@@ -44,14 +45,20 @@ while True:
                 space_id = x[7]
                 needed_likes = x[9]
                 needed_comments = x[10]
-                response = like_post(post_id, email)
-                while response['message'] != "Post has been liked":
-                    if response['message'] == "Oops! couldn't find the post you requested.":
-                        break
-                    email = get_random_user_email()
-                    if response['message'] == "Oops! couldn't find the post you requested.":
-                        continue
+                try:
+                    response = like_withno_api(email, post_id)
+                    if response == 'Post has been liked':
+                        print('post has been liked with no api call')
+                        pass
+                except Exception as e:
                     response = like_post(post_id, email)
+                    while response['message'] != "Post has been liked":
+                        if response['message'] == "Oops! couldn't find the post you requested.":
+                            break
+                        email = get_random_user_email()
+                        if response['message'] == "Oops! couldn't find the post you requested.":
+                            continue
+                        response = like_post(post_id, email)
                 decrement_likes_comments(post_id, "needed_likes")
                     
                 if needed_comments >= 1:
