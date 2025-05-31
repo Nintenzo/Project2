@@ -62,7 +62,7 @@ while True:
                     response = like_post(post_id, email)
                     if response['message'] == "Oops! couldn't find the post you requested.":
                         delete_post(post_id)
-                        break
+                        continue
                     while response['message'] != "Post has been liked":
                         email = get_random_user_email()
                         response = like_post(post_id, email)
@@ -97,7 +97,7 @@ while True:
                         response = like_post(post_id, email)
                         if response['message'] == "Oops! couldn't find the post you requested.":
                             delete_post(post_id)
-                            break
+                            continue
                         while response['message'] != "Post has been liked":
                             email = get_random_user_email()
                             response = like_post(post_id, email)

@@ -264,6 +264,7 @@ def delete_post(post_id):
         cursor = conn.cursor()
         cursor.execute("DELETE FROM posts WHERE post_id = ?", (post_id,))
         conn.commit()
+        print('posted deleted')
         return
     except Exception:
         return
