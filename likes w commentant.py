@@ -24,8 +24,8 @@ def like_comment_sum(posts):
     total_likes = 0
     total_comments = 0
     for post in posts:
-        total_likes += post[9]
-        total_comments += post[10]
+        total_likes += post[2]
+        total_comments += post[3]
     total_interactions = total_likes + total_comments
     hour = (sleep_until_4am() / 60 / 60 )
     total_time_seconds = hour * 60 * 60
@@ -71,7 +71,7 @@ while True:
                 if needed_comments >= 1:
                     if random.randint(0, 100) <= 30:
                         email = get_random_user_email()
-                    if random.randint(0, 100) <= 10:
+                    if random.randint(0, 100) <= 20:
                         continue
                     comment_body = comment_on_post(space_id, post_id, email, previous_openings=previous_openings)
                     if comment_body:
@@ -103,13 +103,15 @@ while True:
                             time.sleep(1)
                     decrement += 1
                     needed_likes -= 1
+                    gc.collect()
                     if decrement >= 50:
                         decrement_likes_comments(post_id, "needed_likes", decrement=decrement)
                         decrement = 0
                 if decrement > 0:
                     decrement_likes_comments(post_id, "needed_likes", decrement=decrement)
                     #needed_likes = fetch_post_byID(post_id)[0] bn3ml track lel likes localy f di useless nek
-                    gc.collect()
+            gc.collect()
+                
         else:
             previous_openings = {}
             print(datetime.now())

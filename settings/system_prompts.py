@@ -109,7 +109,7 @@ Guidelines:
 
 3. do not include the age if it's included
 
-4. if the gender, name, job, location is included replace it with the information I provided
+4. if the gender, name, job, location is included replace it with the information I provided unless there is another instruction in this prompt that says not to include it
 
 5. if there any emojies like :smile: or anything similar remove it
 
@@ -142,7 +142,9 @@ Return only the self-introduction as a single paragraph. Nothing else.
     spelling_mistakes = "YOU MUST HAVE SPELLING MISTAKES"
     no_cap_punc = "YOU MUST NOT RESPECT CAPITILIZATION AND PUNCUATIONS"
     no_sentence_caps = "YOU MUST NOT START SENTENCES WITH CAPITAL LETTERS"
-
+    no_name = "YOU MUST NOT INCLUDE THE MEMBER NAME OR USERNAME IN THE POST"
+    no_job = "YOU MUST NOT INCLUDE THE MEMBER JOB OR IN THE POST"
+    no_city = "YOU MUST NOT INCLUDE MEMBER CITY OR COUNTY IN THE POST"
 
     prompt = (
             system_prompt_post if is_post else
@@ -157,13 +159,29 @@ Return only the self-introduction as a single paragraph. Nothing else.
         prompt + "\n" + no_cap_punc,
         prompt + "\n" + spelling_mistakes + " " + no_cap_punc
     ]
-
-
+        
     if random.random() < 0.88:
         final_prompt = prompt
     else:
         final_prompt = random.choice(imperfect_variants)
     if random.random() < 0.5:
         final_prompt += "\n" + no_sentence_caps
+
+    if is_introduction:
+        introduction_variants = [
+            prompt + "\n" + no_name,
+            prompt + "\n" + no_job,
+            prompt + "\n" + no_city,
+            prompt + "\n" + no_name + " " + no_job,
+            prompt + "\n" + no_name + " " + no_city,
+            prompt + "\n" + no_job + " " + no_city,
+            prompt + "\n" + no_name + " " + no_job + " " + no_city
+        ]
+        if random.random() < 0.6:
+            pass
+        else:
+            final_prompt = random.choice(introduction_variants)
+        if random.random() < 0.5:
+            final_prompt += "\n" + no_sentence_caps
 
     return final_prompt

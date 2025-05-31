@@ -22,7 +22,7 @@ def send_to_gpt(message, final_identity, original_identity, is_youtube=False, is
     prompt = get_system_prompt(final_identity=final_identity, original_identity=original_identity,
                                is_youtube=is_youtube, is_post=is_post, n=n, previous_openings=previous_openings,
                                link=link, post_id=post_id, is_introduction=is_introduction)
-    
+
     openai.api_key = os.getenv("GPT_KEY")
     response = openai.ChatCompletion.create(
         model="gpt-4o",

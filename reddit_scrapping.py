@@ -81,9 +81,9 @@ def main():
                     print("No keywords found.")
                 else:
                     keyword = random.choice(keywords)
-                    chance = random.randint(10,20)
+                    chance = random.randint(10,15)
                     reddit_chance = 100 - chance
-                    res = random.randint(1,100)
+                    res = random.randint(0,100)
                     print(f"Searching keyword: {keyword}")
                     for post in subreddit.search(keyword, sort=random.choice(["new", "relevance"])):
                         if  res <= reddit_chance:
