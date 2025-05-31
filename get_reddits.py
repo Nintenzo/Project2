@@ -6,9 +6,9 @@ import random
 def get_subs():
     # users = get_users_count()
     # daily_posts = max(8, min(15, users // 800))
-    daily_posts = random.randint(8, 15)
-    variation = random.choice([-3, -2, -1, 0, 1, 2, 3])
-    daily_posts = max(6, min(15, daily_posts + variation))
+    # variation = random.choice([-3, -2, -1, 0, 1, 2, 3])
+    # daily_posts = max(6, min(15, daily_posts + variation))
+    daily_posts = random.randint(12, 30)
     high_traffic = [name for name, data in subreddits.items() if data["traffic"] == "high"]
     mid_traffic = [name for name, data in subreddits.items() if data["traffic"] == "mid"]
     low_traffic = [name for name, data in subreddits.items() if data["traffic"] == "low"]

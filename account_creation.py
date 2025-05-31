@@ -287,7 +287,7 @@ while True:
         false_chance = round(1 - true_chance, 2)
         introduction = random.choices([True, False], [true_chance, false_chance])[0]
         if introduction:
-            introduction_date = datetime.now().date() + timedelta(days=random.randint(0,66))
+            introduction_date = datetime.now().date() + timedelta(days=random.randint(0,180))
         else:
             introduction_date = 'NULL'
         insert_users(fullname, mailstring, pw, final_identity, original_gender, pronouns, bio, headline, city, avatar, remember_user_token, user_session_identifier, member_id, public_uid, community_member_id, introduction, introduction_date)

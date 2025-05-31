@@ -1,4 +1,4 @@
-from services.db_service import fetch_posts, get_random_user_email, decrement_likes_comments
+from services.db_service import fetch_posts, get_random_user_email, decrement_likes_comments, delete_post
 from services.until4am import sleep_until_4am
 from services.circle_services import like_post, comment_on_post
 from services.like_comments_with_no_api import like_with_no_api
@@ -61,7 +61,8 @@ while True:
                     print(e)
                     response = like_post(post_id, email)
                     if response['message'] == "Oops! couldn't find the post you requested.":
-                        continue
+                        delete_post(post_id)
+                        break
                     while response['message'] != "Post has been liked":
                         email = get_random_user_email()
                         response = like_post(post_id, email)
@@ -95,6 +96,7 @@ while True:
                     except Exception as e:
                         response = like_post(post_id, email)
                         if response['message'] == "Oops! couldn't find the post you requested.":
+                            delete_post(post_id)
                             break
                         while response['message'] != "Post has been liked":
                             email = get_random_user_email()

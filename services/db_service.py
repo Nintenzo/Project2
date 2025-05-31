@@ -240,7 +240,6 @@ def update_cookies(remember_user_token, user_session_identifier, email):
 
 def get_random_user_email():
     """Fetches a random email from the users table."""
-    conn = None
     try:
         conn, cursor = create_db_users()
         cursor = conn.cursor()
@@ -258,6 +257,18 @@ def get_random_user_email():
         if conn:
             conn.close()
 
+            
+def delete_post(post_id):
+    try:
+        conn, cursor = create_db_users()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM posts WHERE post_id = ?", (post_id,))
+        conn.commit()
+        return
+    except Exception:
+        return
+
+    
 
 def get_users_count():
     try:
