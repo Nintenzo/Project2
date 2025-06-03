@@ -214,10 +214,10 @@ def decrement_likes_comments(post_id, value, decrement=1):
     cursor.close()
     conn.close()
     
-def get_gender(email):
+def get_member_info(email):
     conn, cursor = create_db_users()
     cursor = conn.cursor()
-    cursor.execute("SELECT final_identity, original_identity FROM users WHERE email = ?", (email,))
+    cursor.execute("SELECT name, final_identity, original_identity, role FROM users WHERE email = ?", (email,))
     identity = cursor.fetchall()
     return identity
 

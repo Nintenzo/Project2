@@ -30,6 +30,8 @@ def get_transcript(video_id):
     try:
         transcript = supadata.youtube.transcript(video_id=video_id, lang="en",text=True)
         p40 = int(len(transcript.content) * 0.5)
+        if len(transcript.content) <= 200:
+            return "error"
         if len(transcript.content) >= 20000:
             return transcript.content[:10000]
         else:

@@ -43,7 +43,7 @@ def fresh_cookies(email):
         try:
             if resp.status_code != 200 or 'redirect_url' not in resp.json():
                 print("Login failed or bad response")
-                print(resp.text)
+                print(resp.status_code)
                 return {}
             redirect_url = resp.json()['redirect_url']
             redirect_resp = scraper.get(redirect_url)

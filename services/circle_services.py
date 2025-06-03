@@ -4,7 +4,7 @@ from .db_service import insert_post, get_random_user_email, get_post_data
 from services.like_comments_with_no_api import like_with_no_api
 from services.like_comments_with_no_api import comment_with_no_api
 from dotenv import load_dotenv
-from .db_service import get_gender
+from .db_service import get_member_info
 from .seo_service import get_seo
 from settings.system_prompts import get_system_prompt
 from math import floor
@@ -18,10 +18,10 @@ circle_headers = {
     'Authorization': f'Token {circle_key}'
 }
 community_id = os.getenv("COMMUNITY_ID")
-def send_to_gpt(message, final_identity, original_identity, is_youtube=False, is_post=False, n=30, previous_openings=None, link=None, post_id=None, is_introduction=False):
+def send_to_gpt(name, role, message, final_identity, original_identity, is_youtube=False, is_post=False, n=30, previous_openings=None, link=None, post_id=None, is_introduction=False):
     prompt = get_system_prompt(final_identity=final_identity, original_identity=original_identity,
                                is_youtube=is_youtube, is_post=is_post, n=n, previous_openings=previous_openings,
-                               link=link, post_id=post_id, is_introduction=is_introduction)
+                               link=link, post_id=post_id, is_introduction=is_introduction, name=name, role=role)
 
     rewrite = send_prompt(prompt=prompt, message=message)
     while rewrite == "quota":
@@ -83,9 +83,11 @@ def comment_on_post(space_id, post_id, user_email, previous_openings=None):
     while user_email == post_data[0]:
         user_email = get_random_user_email()
     post_category = post_data[1]
-    gender = get_gender(user_email)
-    final_identity = gender[0][0]
-    original_identity = gender[0][1]
+    member_data = get_member_info(user_email)
+    name = member_data[0][0]
+    final_identity = member_data[0][1]
+    original_identity = member_data[0][2]
+    role = member_data[0][3]
     title = post_data[2]
     description = post_data[3]
 
@@ -99,7 +101,7 @@ Description: {description}
         Title: {title}
         Description: {description}
         """
-    body = send_to_gpt(message=message, is_post=False, final_identity=final_identity, original_identity=original_identity, n=random.randint(10,70), previous_openings=previous_openings, post_id=post_id)[0]
+    body = send_to_gpt(name=name, role=role, message=message, is_post=False, final_identity=final_identity, original_identity=original_identity, n=random.randint(10,70), previous_openings=previous_openings, post_id=post_id)[0]
     url = "https://app.circle.so/api/v1/comments?"
     payload = {"community_id": community_id,
                "space_id": space_id,
@@ -196,7 +198,7 @@ def description_cleaner(description):
     return description
 
 
-def create_post(space_id, email, html_to_add=[], is_youtube=False, title='', description='', external_link='', url='', link='', is_introduction=False, introduction_message=None):
+def create_post(space_id, email, html_to_add=[], is_youtube=False, title='', description='', external_link='', url='', link='', is_introduction=False, introduction_message=None, post_thumbnail=False):
     global html, needed_likes
     html = []
     original_title = title
@@ -208,9 +210,11 @@ Description: {description}
 External_Link: {external_link}
 """
     html.extend(html_to_add)
-    gender = get_gender(email)
-    final_identity = gender[0][0]
-    original_identity = gender[0][1]
+    member_data = get_member_info(email)
+    name = member_data[0][0]
+    final_identity = member_data[0][1]
+    original_identity = member_data[0][2]
+    role = member_data[0][3]
     circle_url = "https://app.circle.so/api/v1/posts?"
     if external_link:
         description += external_link
@@ -220,7 +224,7 @@ Title: {title}
 Transcript: {description}
 Video Link: {link}
 """
-        sen, title, description, seo, post_category = send_to_gpt(message=message, is_youtube=True, final_identity=final_identity, original_identity=original_identity, n=random.randint(100, 280), link=link)
+        sen, title, description, seo, post_category = send_to_gpt(name=name, role=role, message=message, is_youtube=True, final_identity=final_identity, original_identity=original_identity, n=random.randint(100, 280), link=link)
         check_image(link)
     elif is_introduction:
         long = random.randint(0, 100)
@@ -232,10 +236,10 @@ Video Link: {link}
         else:
             lines = f"{random.randint(5, 11)} lines"
         print(lines)
-        description, seo, post_category = send_to_gpt(message=introduction_message, is_introduction=True, final_identity=final_identity, original_identity=original_identity, n=lines)
+        description, seo, post_category = send_to_gpt(name=name, role=role, message=introduction_message, is_introduction=True, final_identity=final_identity, original_identity=original_identity, n=lines)
         sen = 'intro'
     else:
-        sen, title, description, seo, post_category = send_to_gpt(message=message, is_post=True, final_identity=final_identity, original_identity=original_identity,n=random.randint(200, 500))
+        sen, title, description, seo, post_category = send_to_gpt(name=name, role=role, message=message, is_post=True, final_identity=final_identity, original_identity=original_identity,n=random.randint(200, 500))
     payload = {
                 "space_id": space_id,
                 "community_id": os.getenv("COMMUNITY_ID"),
@@ -249,9 +253,9 @@ Video Link: {link}
                 "is_comments_enabled": True,
                 "is_liking_enabled": True,
                 "name": title,
-                "body": description
+                "body": description,
+                "internal_custom_html": ""
             }
-
     if check_image(external_link) and external_link:
         description = remove_external_link(external_link, description)
         payload["body"] = description
@@ -261,7 +265,10 @@ Video Link: {link}
     elif html:
         if is_youtube:
             payload["internal_custom_html"] = f''.join(f'{ht}\n' for ht in html)  
-
+            
+    if post_thumbnail:
+        payload["internal_custom_html"] += post_thumbnail
+        
     if 'false' in (sen.lower().strip(), title.lower().strip(), description.lower().strip()):
         print('falsing')
         return 'false'

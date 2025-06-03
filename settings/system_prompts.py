@@ -1,11 +1,10 @@
 from settings.spaces_keywords import subreddits
 from settings.sentiments_keywords import sentiments
 from services.sentiment import generate_sentiment
-
 import random
 
 def get_system_prompt(final_identity, original_identity, is_youtube, is_post, 
-                        n, previous_openings, link, post_id, is_introduction):
+                        n, previous_openings, link, post_id, is_introduction, name, role):
     sentiment = random.choice(sentiments)
     comment_type = generate_sentiment()
     try:
@@ -18,7 +17,11 @@ def get_system_prompt(final_identity, original_identity, is_youtube, is_post,
         openings_section = ""
         
 
-    system_prompt_post = f"""You are posting as a '{final_identity} {original_identity}' You are an expert content rewriter who transforms text into a unique format
+    system_prompt_post = f"""You are posting as a 'Name {name} Gender is {final_identity} {original_identity} do not include these in the post unless they are available in the original description
+for example if the description have "I'm ninzo" then you can replace it with "I'm {name} also do not include personal details like facebook link or instagram link remove them and make the description fitting
+if the description have a reddit username or any social media username replace it with {name} (only if it's refering to the author)'
+and the gender so you can use correct pronouns and make the description fitting the person writing it
+You are an expert content rewriter who transforms text into a unique format
 to avoid plagiarism while preserving the original meaning.
 Rewrite the provided Reddit post with the post type on the first line with no space or anything extra('educational', 'reference', 'question', 'emotional' , 'polls', 'hot')
 on the first line, followed by the title on the second line followed by the description.
@@ -86,7 +89,13 @@ do not include any keywords like Title: or Description: or anything similar just
 **Do not use any kind of dash, including hyphens (-), en dashes (–), or em dashes (—), anywhere in the comment. Do not use them to join phrases, emphasize ideas,
 or for any other purpose. Use commas, periods, or separate sentences instead.**
 """
-
+    yt_chance = random.randint(0,100)
+    if yt_chance <= 60:
+        system_prompt_youtube += "5. use Gen Z slang language and make it sound like a Gen Z person wrote it\n\n"
+        system_prompt_youtube += "6. Make it seem like it's a person sharing the video to others like sending a video to your friend or something\n\n"
+    if yt_chance <= 80:
+        system_prompt_youtube += "explain the reason why you are sharing the video in not an ai way a very human way THIS IS A MUST  \n\n"
+    
     intro = """Community Description: Tubiit Hubs is a Community 
 Available Categories:
 """

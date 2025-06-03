@@ -90,15 +90,23 @@ def main():
                             youtube = False
                             reddit_link = post.permalink
                             original_title = post.title
+                            original_description = post.selftext
+                            try:
+                                if len(original_description.split()) == 1:
+                                    post_thumbnail = post.preview['images'][0]['source']['url']
+                                    post_thumbnail = f'<img src="{post_thumbnail}" style="max-width:100%;"><br>'
+                                else:
+                                    post_thumbnail = False
+                            except Exception:
+                                post_thumbnail = False
                             try:
                                 external_link = post.url
                             except Exception:
                                 external_link = None
-
                             gallery_data = gallery(post)
                             startwith = ("https://www.reddit.com", "https://v.redd.it/")
                             valid_image_extensions = ('jpg','jpeg','tiff','png','gif','bmp', 'mp4', 'webm' ,'ogg', 'gifv')
-                            original_description = post.selftext
+
                             if len(original_description) <= 5 and external_link.endswith(valid_image_extensions) or \
                                 len(original_description) <= 5 and external_link == None or \
                                 len(original_description) <= 5 and external_link.find('redd') != -1 or \
@@ -125,7 +133,6 @@ def main():
                             youtube = True
                             content = get_yt_link(keyword=keyword)
                             if content == 'false' or len(content['transcript']) <= 5:
-                                
                                 continue
                         try:
                             random_email = get_random_user_email()
@@ -143,6 +150,7 @@ def main():
                                     external_link = external_link,
                                     url = reddit_link,
                                     html_to_add = gallery_data,
+                                    post_thumbnail = post_thumbnail
                                 )
 
                                 if status == "false":
