@@ -252,7 +252,8 @@ def create_person():
             "community_id": community_id,
             "space_ids": space,
             "skip_invitation": False,
-            "location": city
+            "location": city,
+            "space_group_ids": [785737, 748869] # MTNASH T8RHA FI EL COMMUNITY EL GEDIDA
         }
         headers = {'Authorization': os.getenv('CIRCLE_API')}
         try:
@@ -298,4 +299,3 @@ while True:
             break
     except Exception as e:
         print(e)
-        

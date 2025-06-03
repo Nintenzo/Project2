@@ -162,7 +162,7 @@ def main():
                         except Exception as e:
                             print(f"Error during Circle processing/posting: {e}")
                         print("--- Done with this keyword ---")
-                        sleep_time = random.randint(avg_sleep_time - 900, avg_sleep_time + 250)
+                        sleep_time = random.randint(avg_sleep_time - random.randint(1,900), avg_sleep_time + random.randint(1, 400))
                         print(sleep_time)
                         time.sleep(sleep_time)
                         break

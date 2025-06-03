@@ -1,5 +1,5 @@
 import requests
-import openai
+from services.openai_services import send_prompt
 from .db_service import insert_post, get_random_user_email, get_post_data
 from services.like_comments_with_no_api import like_with_no_api
 from services.like_comments_with_no_api import comment_with_no_api
@@ -23,20 +23,11 @@ def send_to_gpt(message, final_identity, original_identity, is_youtube=False, is
                                is_youtube=is_youtube, is_post=is_post, n=n, previous_openings=previous_openings,
                                link=link, post_id=post_id, is_introduction=is_introduction)
 
-    openai.api_key = os.getenv("GPT_KEY")
-    response = openai.ChatCompletion.create(
-        model="gpt-4o",
-        messages=[
-            {
-                "role": "system",
-                "content": prompt
-                },
-            {"role": "user", "content": message}
-        ]
-    )
-    
-    rewrite = response["choices"][0]["message"]["content"]
-    
+    rewrite = send_prompt(prompt=prompt, message=message)
+    while rewrite == "quota":
+        time.sleep(3600)
+        rewrite = send_prompt(prompt=prompt, message=message)
+        
     if is_post or is_youtube:
         sentiment = rewrite.split('\n')[0]
         title = rewrite.split('\n')[1]
@@ -129,7 +120,9 @@ Description: {description}
         print("Comment Not Created")
         return None
 
-def assign_comments(sen, needed_likes):
+def assign_comments(sen, likes):
+    global needed_likes
+    needed_likes = likes
     sen = sen.lower().strip()
     if sen == "educational" or sen == "reference":
         return needed_likes * random.uniform(0.04, 0.07)
@@ -138,6 +131,7 @@ def assign_comments(sen, needed_likes):
     elif sen == "polls" or sen == "hot":
         return needed_likes * random.uniform(0.20, 0.30)
     else:
+        needed_likes = random.randint(30, 150)
         return needed_likes * random.uniform(0.03, 0.08)
     
 
@@ -203,7 +197,7 @@ def description_cleaner(description):
 
 
 def create_post(space_id, email, html_to_add=[], is_youtube=False, title='', description='', external_link='', url='', link='', is_introduction=False, introduction_message=None):
-    global html
+    global html, needed_likes
     html = []
     original_title = title
     original_description = description
@@ -280,7 +274,7 @@ Video Link: {link}
         print("Post Created")
         data = response.json() 
         post_id = data['post']['id']
-        needed_likes = random.randint(60, 400)
+        needed_likes = random.randint(400, 1050)
         try:
             needed_comments = floor(assign_comments(sen, needed_likes))
         except Exception:

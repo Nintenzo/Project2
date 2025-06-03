@@ -27,7 +27,9 @@ def like_comment_sum(posts):
         total_likes += post[2]
         total_comments += post[3]
     total_interactions = total_likes + total_comments
-    hour = (sleep_until_4am() / 60 / 60 )
+    hour = (sleep_until_4am() / 60 / 60 ) - 6
+    if hour <= 0:
+        hour = 1
     total_time_seconds = hour * 60 * 60
     average_sleep_time = total_time_seconds // total_interactions
     percentage = random.uniform(-0.3, 0.3)
@@ -66,7 +68,7 @@ while True:
                     while response['message'] != "Post has been liked":
                         email = get_random_user_email()
                         response = like_post(post_id, email)
-                        time.sleep(1)
+                        #time.sleep(1)
                 decrement_likes_comments(post_id, "needed_likes")
                 needed_likes -= 1
                 if needed_comments >= 1:
@@ -91,7 +93,7 @@ while True:
                         response = like_with_no_api(email, post_id)
                         if response == 'Post has been liked':
                             print('post has been liked with no api call')
-                            time.sleep(1)
+                            #time.sleep(1)
                             pass
                     except Exception as e:
                         response = like_post(post_id, email)
@@ -102,7 +104,7 @@ while True:
                             email = get_random_user_email()
                             response = like_post(post_id, email)
                             gc.collect()
-                            time.sleep(1)
+                            #time.sleep(1)
                     decrement += 1
                     needed_likes -= 1
                     gc.collect()

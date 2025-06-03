@@ -1,5 +1,7 @@
 import sqlite3
-
+import os
+from dotenv import load_dotenv
+load_dotenv()
 def create_db_users():
     conn = sqlite3.connect("circle_users.db")
     cursor = conn.cursor()
@@ -23,6 +25,7 @@ def create_db_users():
         community_member_id INTEGER,
         introduction TEXT,
         introduction_date TEXT
+        role TEXT DEFAULT 'member'
     )
     """)
     return conn, cursor
@@ -141,11 +144,17 @@ def insert_post(email, original_title, original_description, ai_title, ai_descri
         print(f"Error inserting data: {e}")
     return
 
-def fetch_posts():
+def fetch_posts(intro=False):
+    introduction_space_id = os.getenv('INTRODUCTION_SPACE_ID')
     conn, cursor = create_post_db()
-    cursor.execute("""
-    SELECT post_id, space_id, needed_likes, needed_comments FROM posts
-    WHERE needed_likes > 0""")
+    if not intro:
+        cursor.execute(f"""
+        SELECT post_id, space_id, needed_likes, needed_comments FROM posts
+        WHERE needed_likes > 0""")
+    else:
+        cursor.execute(f"""
+        SELECT post_id, space_id, needed_likes, needed_comments FROM posts
+        WHERE needed_likes > 0 and post_id != {introduction_space_id}""")
     result = cursor.fetchall()
     return result
 
@@ -260,13 +269,13 @@ def get_random_user_email():
             
 def delete_post(post_id):
     try:
-        conn, cursor = create_db_users()
-        cursor = conn.cursor()
+        conn, cursor = create_post_db()
         cursor.execute("DELETE FROM posts WHERE post_id = ?", (post_id,))
         conn.commit()
         print('posted deleted')
         return
-    except Exception:
+    except Exception as e:
+        print(e)
         return
 
     

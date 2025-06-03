@@ -6,12 +6,15 @@ import os
 from dotenv import load_dotenv
 import time
 import schedule
+import random
 
 load_dotenv()
 introduction_space_id = os.getenv('INTRODUCTION_SPACE_ID')
 def main():
     print(datetime.now())
     data = fetch_introduction()
+    posts = 0
+    cap = random.randint(15, 32)
     if data:
         ready_members = set()
         for x in data:
@@ -21,7 +24,7 @@ def main():
         del data
         if ready_members:
             total_time_seconds = 19 * 60 * 60
-            avg_sleep_time = total_time_seconds // len(ready_members)
+            avg_sleep_time = total_time_seconds // cap
             
             for x in ready_members:
                 email = x[0]
@@ -37,6 +40,9 @@ Introduction Template: {template}
 """
                 create_post(space_id=introduction_space_id, email=email, is_introduction=True, introduction_message=message)
                 update_introduction(email)
+                posts += 1
+                if posts >= cap:
+                    break
                 print(avg_sleep_time)
                 time.sleep(avg_sleep_time)
             print(datetime.now())
