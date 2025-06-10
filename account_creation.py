@@ -11,7 +11,7 @@ from services.db_service import create_db_users, insert_users, fetch_spaces_id
 from settings.cities import uscities
 from settings.bio_keywords import bio_words
 from services.pinterest_api import get_img
-from identity_data import LGBT_IDENTITIES, get_pronouns
+from services.identity_data import LGBT_IDENTITIES, get_pronouns
 from services.activator_service import send_otp
 from services.create_email import create_email
 from dotenv import load_dotenv

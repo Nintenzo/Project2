@@ -57,7 +57,7 @@ while True:
                     response = like_with_no_api(email, post_id)
                     if response == 'Post has been liked':
                         print('post has been liked with no api call')
-                        time.sleep(1)
+                        time.sleep(2)
                         pass
                 except Exception as e:
                     print(e)
@@ -93,7 +93,7 @@ while True:
                         response = like_with_no_api(email, post_id)
                         if response == 'Post has been liked':
                             print('post has been liked with no api call')
-                            #time.sleep(1)
+                            time.sleep(2)
                             pass
                     except Exception as e:
                         response = like_post(post_id, email)
@@ -104,7 +104,7 @@ while True:
                             email = get_random_user_email()
                             response = like_post(post_id, email)
                             gc.collect()
-                            #time.sleep(1)
+                            time.sleep(2)
                     decrement += 1
                     needed_likes -= 1
                     gc.collect()

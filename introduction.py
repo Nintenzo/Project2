@@ -14,7 +14,7 @@ def main():
     print(datetime.now())
     data = fetch_introduction()
     posts = 0
-    cap = random.randint(15, 32)
+    cap = random.randint(15, 50)
     if data:
         ready_members = set()
         for x in data:
@@ -51,7 +51,7 @@ Introduction Template: {template}
             print('No member turns today')
 
 schedule.every().day.at("04:00").do(main)
-
+main()
 while True:
     schedule.run_pending()
     time.sleep(60)

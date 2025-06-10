@@ -20,7 +20,7 @@ from settings.bio_keywords import bio_words
 from settings.headlines_keywords import common_jobs
 import subprocess
 from services.pinterest_api import get_img
-from identity_data import LGBT_IDENTITIES, get_pronouns
+from services.identity_data import LGBT_IDENTITIES, get_pronouns
 from services.cookies_service import get_cookies
 from dotenv import load_dotenv
 

@@ -57,6 +57,19 @@ def fetch_introduction():
     result = cursor.fetchall()
     return result
 
+
+def fetch_inappropriate_posts():
+    conn, cursor = create_post_db()
+    cursor.execute("""SELECT 
+                   email, ai_title,
+                   post_id
+                   FROM posts
+                   WHERE post_category = 'inappropriate'""")
+    
+    result = cursor.fetchall()
+    return result
+
+
 def update_introduction(email):
     conn, cursor = create_db_users()
     cursor.execute("""
@@ -66,6 +79,17 @@ def update_introduction(email):
             """, (email,))
     conn.commit()
     print('Introduction Updated')
+
+
+def update_inappropriate(post_id):
+    conn, cursor = create_post_db()
+    cursor.execute("""
+                UPDATE posts
+                SET post_category = 'done', needed_likes = 0, needed_comments = 0
+                WHERE post_id = ?
+            """, (post_id,))
+    conn.commit()
+    print('Category Updated')
 def create_db_space():
     conn = sqlite3.connect("spaces.db")
     cursor = conn.cursor()

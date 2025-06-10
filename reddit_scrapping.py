@@ -6,12 +6,12 @@ import os
 import praw
 import random
 from dotenv import load_dotenv
-from get_reddits import get_subs
+from services.get_reddits import get_subs
 from settings.spaces_keywords import subreddits as all_subreddits
 from services.yt_service import get_yt_link
 load_dotenv()
 
-max_post = 18
+max_post = 60
 
 def gallery(post):
     gallery_data = []
@@ -83,16 +83,18 @@ def main():
                     keyword = random.choice(keywords)
                     chance = random.randint(10,15)
                     reddit_chance = 100 - chance
-                    res = random.randint(0,100)
+                    res = random.randint(0,2)
                     print(f"Searching keyword: {keyword}")
                     for post in subreddit.search(keyword, sort=random.choice(["new", "relevance"])):
+                        is_inappropriate = False
+                        is_cathmart_post = False
                         if  res <= reddit_chance:
                             youtube = False
                             reddit_link = post.permalink
                             original_title = post.title
                             original_description = post.selftext
                             try:
-                                if len(original_description.split()) == 1:
+                                if len(original_description.split()) == 0:
                                     post_thumbnail = post.preview['images'][0]['source']['url']
                                     post_thumbnail = f'<img src="{post_thumbnail}" style="max-width:100%;"><br>'
                                 else:
@@ -114,21 +116,23 @@ def main():
                                 external_link.find('youtu') != -1 or \
                                 external_link.find('imgur') != -1:
                                 continue
-
                             if external_link.startswith(startwith):
                                 external_link = None
-
                             author = post.author.name if post.author else "[deleted]"
                             post_info = f"-- Found Post: {original_title}"
                             if author == 'AutoModerator':
                                 print("Skipping AutoModerator post.")
                                 continue
-
                             if check_if_posted(reddit_link, cursor):
                                 print("Skipping: Already posted.")
                                 continue
                             print(f"{post_info}")
                             print(f"Link: {reddit_link}")
+                            chance = random.randint(0, 100)
+                            if chance <= 100:
+                                is_inappropriate = True
+                            elif chance <= 4:
+                                is_cathmart_post = True
                         else:
                             youtube = True
                             content = get_yt_link(keyword=keyword)
@@ -150,7 +154,9 @@ def main():
                                     external_link = external_link,
                                     url = reddit_link,
                                     html_to_add = gallery_data,
-                                    post_thumbnail = post_thumbnail
+                                    post_thumbnail = post_thumbnail,
+                                    is_inappropriate = is_inappropriate,
+                                    is_cathmart_post = is_cathmart_post
                                 )
 
                                 if status == "false":
@@ -162,7 +168,9 @@ def main():
                                     is_youtube = youtube,
                                     title = content['title'],
                                     link = content['link'],
-                                    description = content['transcript']
+                                    description = content['transcript'],
+                                    is_inappropriate = is_inappropriate,
+                                    is_cathmart_post = is_cathmart_post
                                 )
                                 if status == "false":
                                     continue

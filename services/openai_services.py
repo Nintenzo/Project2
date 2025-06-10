@@ -4,15 +4,15 @@ import openai
 import openai.error
 load_dotenv()
 
-def send_prompt(prompt, message):
+def send_prompt(system_prompt, message, model):
     openai.api_key = os.getenv("GPT_KEY")
     try:
         response = openai.ChatCompletion.create(
-            model="gpt-4o",
+            model=model,
             messages=[
                 {
                     "role": "system",
-                    "content": prompt
+                    "content": system_prompt
                     },
                 {"role": "user", "content": message}
             ]

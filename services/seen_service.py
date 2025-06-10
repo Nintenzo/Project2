@@ -1,6 +1,6 @@
 from services.db_service import get_user_password
 import cloudscraper
-
+import time
 # def last_seen(email):  el seen keda keda bit3ml automatic m3 el likes w comments f di useless bardo
 #     try:
 #         remember_user_token, user_session_identifier = fresh_cookies(email)
@@ -41,7 +41,11 @@ def fresh_cookies(email):
         })
         resp = scraper.post(login_url, json=payload)
         try:
-            if resp.status_code != 200 or 'redirect_url' not in resp.json():
+            if resp.status_code == 429:
+                print(resp.status_code)
+                time.sleep(120)
+                return {}
+            elif resp.status_code != 200 or 'redirect_url' not in resp.json():
                 print("Login failed or bad response")
                 print(resp.status_code)
                 return {}
