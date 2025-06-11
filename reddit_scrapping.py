@@ -1,17 +1,17 @@
-from services.circle_services import create_post
 from services.db_service import get_random_user_email, create_post_db, check_if_posted
-import schedule
-import time
-import os
-import praw
-import random
-from dotenv import load_dotenv
-from services.get_reddits import get_subs
 from settings.spaces_keywords import subreddits as all_subreddits
+from services.get_reddits import get_subs, max_post
+from services.circle_services import create_post
 from services.yt_service import get_yt_link
-load_dotenv()
+from dotenv import load_dotenv
+import schedule
+import random
+import time
+import praw
+import os
+import traceback
 
-max_post = 60
+load_dotenv()
 
 def gallery(post):
     gallery_data = []
@@ -88,6 +88,7 @@ def main():
                     for post in subreddit.search(keyword, sort=random.choice(["new", "relevance"])):
                         is_inappropriate = False
                         is_cathmart_post = False
+                        is_tubiit_post = False
                         if  res <= reddit_chance:
                             youtube = False
                             reddit_link = post.permalink
@@ -129,10 +130,14 @@ def main():
                             print(f"{post_info}")
                             print(f"Link: {reddit_link}")
                             chance = random.randint(0, 100)
-                            if chance <= 100:
+                            if chance <= 1:
                                 is_inappropriate = True
-                            elif chance <= 4:
-                                is_cathmart_post = True
+                            elif chance <= 6:
+                                chance = random.randint(0, 100)
+                                if chance >= 50:
+                                    is_cathmart_post = True
+                                else: 
+                                    is_tubiit_post = True
                         else:
                             youtube = True
                             content = get_yt_link(keyword=keyword)
@@ -156,7 +161,8 @@ def main():
                                     html_to_add = gallery_data,
                                     post_thumbnail = post_thumbnail,
                                     is_inappropriate = is_inappropriate,
-                                    is_cathmart_post = is_cathmart_post
+                                    is_cathmart_post = is_cathmart_post,
+                                    is_tubiit_post = is_tubiit_post
                                 )
 
                                 if status == "false":
@@ -170,13 +176,15 @@ def main():
                                     link = content['link'],
                                     description = content['transcript'],
                                     is_inappropriate = is_inappropriate,
-                                    is_cathmart_post = is_cathmart_post
+                                    is_cathmart_post = is_cathmart_post,
+                                    is_tubiit_post = is_tubiit_post
                                 )
                                 if status == "false":
                                     continue
 
                         except Exception as e:
                             print(f"Error during Circle processing/posting: {e}")
+                            traceback.print_exc()
                         print("--- Done with this keyword ---")
                         sleep_time = random.randint(avg_sleep_time - random.randint(1,900), avg_sleep_time + random.randint(1, 400))
                         print(sleep_time)

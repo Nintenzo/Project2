@@ -1,18 +1,19 @@
-import requests
-from services.openai_services import send_prompt
+from services.like_comments_with_no_api import comment_with_no_api, like_with_no_api
 from .db_service import insert_post, get_random_user_email, get_post_data
-from services.like_comments_with_no_api import like_with_no_api
-from services.like_comments_with_no_api import comment_with_no_api
 from settings.cathmart_products import cathmart_products
-from dotenv import load_dotenv
+from settings.system_prompts import get_system_prompt
+from services.openai_services import send_prompt
+from settings.tubiit_surgeries import surgeries
 from .db_service import get_member_info
 from .seo_service import get_seo
-from settings.system_prompts import get_system_prompt
+from dotenv import load_dotenv
 from math import floor
-import os
+import requests
+import markdown
 import random
 import time
-import markdown
+import json
+import os
 
 load_dotenv()
 circle_key = os.getenv("CIRCLE_API")
@@ -20,11 +21,16 @@ circle_headers = {
     'Authorization': f'Token {circle_key}'
 }
 community_id = os.getenv("COMMUNITY_ID")
+days = 10
+
 def send_to_gpt(name, message, final_identity, original_identity, is_inappropriate=False, author_gender=None, is_youtube=False, is_post=False, n=30,
-                previous_openings=None, link=None, post_id=None, is_introduction=False, is_cathmart_post=False, is_cathmart_comment=False, model="gpt-4o-mini"):
+                previous_openings=None, link=None, post_id=None, is_introduction=False, is_cathmart_post=False, is_cathmart_comment=False,
+                is_tubiit_post=False, is_tubiit_comment=False, model="gpt-4o-mini"):
     system_prompt = get_system_prompt(
+        is_tubiit_comment=is_tubiit_comment,
         is_cathmart_comment=is_cathmart_comment,
         is_cathmart_post=is_cathmart_post,
+        is_tubiit_post=is_tubiit_post,
         author_gender=author_gender,
         final_identity=final_identity,
         original_identity=original_identity,
@@ -43,7 +49,7 @@ def send_to_gpt(name, message, final_identity, original_identity, is_inappropria
     while rewrite == "quota":
         time.sleep(3600)
         rewrite = send_prompt(system_prompt=system_prompt, message=message)
-    if is_post or is_youtube or is_inappropriate or is_cathmart_post:
+    if is_post or is_youtube or is_inappropriate or is_cathmart_post or is_tubiit_post:
         sentiment = rewrite.strip().split('\n')[0]
         title = rewrite.strip().split('\n')[1]
         description = ''.join(rewrite.strip().split('\n')[2:])
@@ -51,7 +57,9 @@ def send_to_gpt(name, message, final_identity, original_identity, is_inappropria
         post_category = ("reddit" if is_post else 
                          "inappropriate" if is_inappropriate else
                          "cathmart" if is_cathmart_post else
+                         "tubiit" if is_tubiit_post else
                          "youtube")
+        
         return sentiment, title, description, seo, post_category
     # elif is_inappropriate:
     #     sentiment = rewrite.split('\n')[0]
@@ -128,10 +136,24 @@ Description: {description}
         Title: {title}
         Description: {description}
         """
-    elif post_category == "cathmart":
+    if post_category == "cathmart":
         body = send_to_gpt(
             model="gpt-4.1-nano",
             is_cathmart_comment=True,
+            author_gender=author_gender,
+            name=name,
+            message=message,
+            is_post=False,
+            final_identity=final_identity,
+            original_identity=original_identity,
+            n=random.randint(1, 70),
+            previous_openings=previous_openings,
+            post_id=post_id
+        )[0]
+    elif post_category == "tubiit":
+        body = send_to_gpt(
+            model="gpt-4.1-nano",
+            is_tubiit_comment=True,
             author_gender=author_gender,
             name=name,
             message=message,
@@ -252,7 +274,7 @@ def description_cleaner(description):
 
 
 def create_post(space_id, email, html_to_add=[], is_youtube=False, title='', description='', external_link='', url='', link='', is_introduction=False,
-                is_inappropriate=False, introduction_message=None, post_thumbnail=False, is_cathmart_post=False):
+                is_inappropriate=False, introduction_message=None, post_thumbnail=False, is_cathmart_post=False, is_tubiit_post=False):
     global html, needed_likes
     html = []
     original_title = title
@@ -272,7 +294,7 @@ External_Link: {external_link}
     circle_url = "https://app.circle.so/api/v1/posts?"
     if external_link:
         description += external_link
-    if is_youtube and not is_inappropriate and not is_cathmart_post:
+    if is_youtube and not any([is_inappropriate, is_cathmart_post, is_tubiit_post]):
         message = f"""
     Title: {title}
     Transcript: {description}
@@ -331,6 +353,18 @@ Product: {item}"""
             original_identity=original_identity
         )
 
+    elif is_tubiit_post:
+        type = random.choice(surgeries)
+        message = f"""Gender: {final_identity} {original_identity}
+type: {type}"""
+        sen, title, description, seo, post_category = send_to_gpt(
+            is_tubiit_post=True,
+            name=name,
+            message=message,
+            final_identity=final_identity,
+            original_identity=original_identity,
+            n=random.randint(30, 200)
+        )
     else:
         sen, title, description, seo, post_category = send_to_gpt(
             name=name,
@@ -390,8 +424,13 @@ Product: {item}"""
     if response.status_code == 200:
         print("Post Created")
         data = response.json() 
-        post_id = data['post']['id']
-        needed_likes = random.randint(400, 1050)
+        post_id = data['post']['id']     
+
+        if random.randint(0, 100) <= 10:
+            needed_likes = random.randint(0, 100)
+        else:
+            needed_likes = random.randint(400, 1050)
+
         try:
             needed_comments = floor(assign_comments(sen, needed_likes))
         except Exception:
@@ -405,6 +444,16 @@ Post Description: {description}
 ************************************************************
 Transcript: {original_description}
 """
+            
+        split_likes = needed_likes // days
+        split_comments = needed_comments // days
+        likes_arr = []
+        comments_arr = []
+        for x in range(days):
+            likes_arr.append(split_likes)
+            comments_arr.append(split_comments)
+        needed_likes = json.dumps(likes_arr)
+        needed_comments = json.dumps(comments_arr)
         insert_post(email, original_title, original_description, title, description, post_id, space_id, url, needed_likes=needed_likes, needed_comments=needed_comments, post_category=post_category)
         try:
             like_with_no_api(email, post_id, remove=True)

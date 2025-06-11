@@ -6,9 +6,21 @@ import random
 import time
 from pympler.asizeof import asizeof
 from datetime import datetime
+import json
 import gc
 
-def extract_opening(text, num_words=10):
+
+def safe_json_first_value(json_str):
+	try:
+		data = json.loads(json_str)
+		if isinstance(data, list) and data:
+			return data[0]
+	except Exception:
+		pass
+	return 0
+
+
+def extract_opening(text, num_words=20):
     if not text:
         return ""
     sentence = text.split('.')
@@ -23,16 +35,20 @@ def extract_opening(text, num_words=10):
 def like_comment_sum(posts):
     total_likes = 0
     total_comments = 0
+    
     for post in posts:
-        total_likes += post[2]
-        total_comments += post[3]
+        total_likes += json.loads(post[2])[0]
+        if len(json.loads(post[2])) == len(json.loads(post[3])):
+            total_comments += json.loads(post[3])[0]
+        else:
+            total_comments += 0
     total_interactions = total_likes + total_comments
     hour = (sleep_until_4am() / 60 / 60 ) - 6
     if hour <= 0:
         hour = 1
     total_time_seconds = hour * 60 * 60
     average_sleep_time = total_time_seconds // total_interactions
-    percentage = random.uniform(-0.3, 0.3)
+    percentage = random.uniform(-0.2, 0)
     average_sleep_time = int(average_sleep_time * (1 + percentage))
     return average_sleep_time
 
@@ -46,13 +62,12 @@ while True:
             for x in random.sample(posts, len(posts)):
                 if asizeof(previous_openings) > CAP:
                     previous_openings = {}
-                print(average_sleep_time)
                 email = get_random_user_email()
                 print('emailed changed')
                 post_id = x[0]
                 space_id = x[1]
-                needed_likes = x[2]
-                needed_comments = x[3]
+                needed_likes = safe_json_first_value(x[2])
+                needed_comments = safe_json_first_value(x[3])
                 try:
                     response = like_with_no_api(email, post_id)
                     if response == 'Post has been liked':
@@ -71,7 +86,7 @@ while True:
                         #time.sleep(1)
                 decrement_likes_comments(post_id, "needed_likes")
                 needed_likes -= 1
-                if needed_comments >= 1:
+                if needed_comments >= 1 and len(json.loads(x[2])) == len(json.loads(x[3])):
                     if random.randint(0, 100) <= 30:
                         email = get_random_user_email()
                     if random.randint(0, 100) <= 20:
@@ -83,10 +98,11 @@ while True:
                             previous_openings[post_id] = []
                         previous_openings[post_id].append(opening)
                     decrement_likes_comments(post_id, "needed_comments")
+                    print(average_sleep_time)
                     time.sleep(average_sleep_time)
                     continue
                 decrement = 0
-                while needed_comments <= 0 and needed_likes >= 1:
+                while len(json.loads(x[3])) < len(json.loads(x[2])) and needed_likes >= 1 or needed_comments >= 0 and needed_likes >= 1:
                     print(f"Likes left: {needed_likes}")
                     email = get_random_user_email()
                     try:
@@ -111,6 +127,8 @@ while True:
                     if decrement >= 50:
                         decrement_likes_comments(post_id, "needed_likes", decrement=decrement)
                         decrement = 0
+                    if needed_likes <= 0:
+                        break
                 if decrement > 0:
                     decrement_likes_comments(post_id, "needed_likes", decrement=decrement)
                     #needed_likes = fetch_post_byID(post_id)[0] bn3ml track lel likes localy f di useless nek

@@ -81,6 +81,7 @@ while True:
                 name = get_member_info(moderator_email)[0][0]
                 moderator = [moderator_email, name]
                 update_posts(x, moderator)
+                time.sleep(3)
             except Exception as e:
                 print(e)
     print('yay sleep time')

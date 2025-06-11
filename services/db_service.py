@@ -1,6 +1,10 @@
-import sqlite3
-import os
 from dotenv import load_dotenv
+from datetime import datetime
+import sqlite3
+import json
+import os
+
+
 load_dotenv()
 def create_db_users():
     conn = sqlite3.connect("circle_users.db")
@@ -147,7 +151,8 @@ def create_post_db():
         links TEXT NOT NULL,
         needed_likes INTEGER,
         needed_comments INTEGER,
-        post_category TEXT
+        post_category TEX,
+        last_updated TEXT DEFAULT "2000-01-1"
     )
     """)
     return conn, cursor
@@ -168,19 +173,35 @@ def insert_post(email, original_title, original_description, ai_title, ai_descri
         print(f"Error inserting data: {e}")
     return
 
+
 def fetch_posts(intro=False):
-    introduction_space_id = os.getenv('INTRODUCTION_SPACE_ID')
-    conn, cursor = create_post_db()
-    if not intro:
-        cursor.execute(f"""
-        SELECT post_id, space_id, needed_likes, needed_comments FROM posts
-        WHERE needed_likes > 0""")
-    else:
-        cursor.execute(f"""
-        SELECT post_id, space_id, needed_likes, needed_comments FROM posts
-        WHERE needed_likes > 0 and post_id != {introduction_space_id}""")
-    result = cursor.fetchall()
-    return result
+	introduction_space_id = os.getenv('INTRODUCTION_SPACE_ID')
+	conn, cursor = create_post_db()
+
+	cursor.execute(f"""SELECT post_id, space_id, needed_likes, needed_comments FROM posts WHERE last_updated <= '{datetime.now().date()}'""")
+	all_posts = cursor.fetchall()
+
+	filtered_posts = []
+
+	for post_id, space_id, likes_json, comments_json in all_posts:
+		try:
+			likes = json.loads(likes_json)
+
+			if not isinstance(likes, list) or not all(isinstance(x, (int, float)) for x in likes):
+				continue
+
+			if not any(like > 0 for like in likes):
+				continue
+
+		except (json.JSONDecodeError, TypeError):
+			continue
+
+		if intro and str(post_id) == str(introduction_space_id):
+			continue
+
+		filtered_posts.append((post_id, space_id, likes_json, comments_json))
+
+	return filtered_posts
 
 def add_col(db, table, col, type, default):
     conn = sqlite3.connect(db)
@@ -219,23 +240,44 @@ def get_post_data(post_id):
     """Fetches post data by post_id."""
     conn, cursor = create_post_db()
     cursor.execute("""
-        SELECT email, post_category, ai_title, ai_description FROM posts
-        WHERE post_id = ?
+    SELECT email, post_category, ai_title, 
+    ai_description FROM posts
+    WHERE post_id = ?
     """, (post_id,))
     result = cursor.fetchone()
     conn.close()
     return result
 
 
+def last_updater(post_id):
+    conn, cursor = create_post_db()
+    cursor.execute("""
+    UPDATE posts 
+    SET last_updated = ?
+    WHERE post_id = ? """, (datetime.now().date(),post_id,))
+    conn.commit()
+    conn.close()
+
 def decrement_likes_comments(post_id, value, decrement=1):
     conn, cursor = create_post_db()
+    cursor.execute(f"SELECT {value} FROM posts WHERE post_id = ?", (post_id,))
+    array = cursor.fetchone()
+    array = json.loads(array[0])
+    try:
+        array[0] -= decrement
+    except Exception:
+        return
+    if array[0] <= 0:
+        array.remove(array[0])
+        if value == "needed_likes":
+            last_updater(post_id)
+    array = json.dumps(array)
     cursor.execute(f"""
     UPDATE posts
-    SET {value} = {value} - {decrement}
+    SET {value} = '{array}'
     WHERE post_id = {post_id}
     """)
     conn.commit()
-    cursor.close()
     conn.close()
     
 def get_member_info(email):

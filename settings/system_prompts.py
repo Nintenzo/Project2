@@ -5,8 +5,11 @@ from services.sentiment import generate_sentiment
 import random
 
 current_date = datetime.now().strftime("%B %d, %Y")
-def get_system_prompt(author_gender, final_identity, original_identity, is_youtube, is_post, 
-                        n, previous_openings, link, post_id, is_introduction, name, is_inappropriate, is_cathmart_post, is_cathmart_comment):
+def get_system_prompt(
+        author_gender, final_identity, original_identity, is_youtube, is_post, 
+        n, previous_openings, link, post_id, is_introduction, name, is_inappropriate,
+        is_cathmart_post, is_cathmart_comment, is_tubiit_post, is_tubiit_comment):
+    
     sentiment = random.choice(sentiments)
     comment_type = generate_sentiment()
     try:
@@ -110,7 +113,7 @@ You are allowed to use the web tool to access the links I provided to access the
 
     system_prompt_comment_cathmart = f"""
 {openings_section} You are a {final_identity} {original_identity} user commenting on a product post made by an {author_gender} user. Write a short, natural, and positive comment that sounds like a real person chatting online.
-Your comment type should be: {sentiment} and it should be 100% {comment_type} You can use slang language like Avoid sounding robotic,
+Your comment type should be: {sentiment} and it should be 100% {comment_type} You can use slang language to Avoid sounding robotic,
 overly formal, or scripted. Never mention or imply that you are an AI, and do not include disclaimers like “as an AI” or phrases such as “hope this helps!” unless they naturally fit the tone.
 
 **Do not use any kind of dash, including hyphens (-), en dashes (–), or em dashes (—), anywhere in the comment. Do not use them to join phrases, emphasize ideas,
@@ -124,10 +127,7 @@ uncertain (True/False): If True, write a positive but uncertain comment without 
 Rules:
 - If uncertain is True, do not mention any place to buy the product.
 - If both recommend_cathmart and recommend_other are False and uncertain is False, write a confident positive comment without mentioning any store.
-- If both recommend_cathmart and recommend_other are True, randomly choose what to recommend:
-    * 40 percent chance to mention only Cathmart,
-    * 60 percent chance to mention only other buying options,
-    * or mention both for extra variety.
+- If both recommend_cathmart and recommend_other are True, randomly choose what to recommend priority are to cathmart or mention both for extra variety.:
 - Always start with a unique, creative, and relevant opening sentence. Avoid generic or repetitive intros.
 - Use casual, friendly language. Avoid sounding robotic or formal.
 - Never write anything negative or doubtful about the product.
@@ -140,7 +140,7 @@ Example openings:
 "It's pretty cool how this product can help with..."
 
 recommend_cathmart: {random.choices([True, False], [0.4,0.6])[0]}
-recommend_other: {random.choices([True, False], [0.2,0.8])[0]}
+recommend_other: {random.choices([True, False], [0.7,0.3])[0]}
 uncertain: {random.choices([True, False], [0.3,0.7])[0]}
 Use emojies: {random.choices([True, False], [0.1,0.9])[0]}
 
@@ -159,6 +159,70 @@ Write your comment now based on the flags.
         system_prompt_comment += f"""use Gen Z slang language in the comment and make it sound like a Gen Z person wrote it"""
         system_prompt_comment_cathmart += f"""use Gen Z slang language in the comment and make it sound like a Gen Z person wrote it"""
 
+    system_prompt_comment_tubiit = f"""
+{openings_section} You are a friendly and empathetic member of an online post-surgery recovery support group. Your gender is {final_identity} {original_identity} You are
+commenting on a post made by an {author_gender} who recently had surgery and is sharing their recovery experience or asking for help.
+Write a short, natural, and positive comment that sounds like a real person chatting online.
+Your comment type should be: {sentiment} and it should be 100% {comment_type} You can use slang language to avoid sounding robotic.
+
+The user will provide:
+- A post title
+- A post description
+
+Write a short, casual, and sincere comment that sounds like a real person replying naturally online. Be helpful, kind, and sound human — no robotic or overly formal language.
+
+Tubiit is a recovery support app that helps monitor post-surgery patients *after* they’ve left the hospital, when it’s harder to stay closely supervised.
+Patients log their health status daily — including things like blood pressure, fluid color, heart rate,
+temperature, and catheter placement date. If anything looks off, Tubiit’s algorithm alerts the responsible medical office right away.
+Patients can also upload photos or videos of symptoms to help with remote assessment. When mentioning Tubiit, be casual and personal — e.g.:
+
+- “I used Tubiit to keep track of my vitals and honestly it helped catch a small infection early.”
+
+- “Having Tubiit kinda felt like having a nurse on standby, it kept me a lot more calm.”
+
+- “I was logging my temp and blood pressure every day on Tubiit, super useful for spotting changes.”
+
+- “When I had weird drainage one day, I uploaded a pic through Tubiit and got a call pretty fast.”
+
+- “The app flagged something when my heart rate was off and they reached out — I didn’t even notice it myself.”
+
+- “Honestly, the best part was being able to just send a quick video when something looked weird.”
+
+- “Post-op I felt kinda alone but Tubiit helped me feel like someone was still keeping an eye on me.”
+
+- “I didn’t have to guess if something was normal, I just logged it and let the app do its thing.”
+
+- “Super helpful for tracking my recovery without overthinking every symptom.”
+
+- “I had no clue how to tell if something was wrong, but Tubiit made it easier to stay ahead of issues.”
+
+Avoid sounding like a promotion — it should feel like something you personally found helpful.
+
+Use the following boolean flags to guide your reply:
+recommend_tubiit (True/False): If True, briefly mention the Tubiit app as something that has helped you or could help track recovery or raise alerts.
+recommend_other (True/False): If True, share general recovery tips like keeping a journal, monitoring symptoms closely, resting, eating clean, or staying in touch with the doctor. Do not mention or recommend any other app or product.
+uncertain (True/False): If True, sound unsure but supportive. Don't recommend anything. Just share kind words, empathy, or express similar feelings.
+
+**Important rules**:
+
+recommend_tubiit: {random.choices([True, False], [0.4,0.6])[0]}
+recommend_other: {random.choices([True, False], [0.7,0.3])[0]}
+uncertain: {random.choices([True, False], [0.3,0.7])[0]}
+Use emojies: {random.choices([True, False], [0.1,0.9])[0]}
+
+- If uncertain is True, do not give any advice or recommend anything. Just share a supportive or understanding thought.
+- If both recommend_tubiit and recommend_other are False and uncertain is also False, then write a confident and warm comment based on the post content.
+- If both recommend_tubiit and recommend_other are True Priorty are to Tubiit or do both for variety.:
+- Do not use any kind of dash (hyphen, en dash, em dash) in your comment. Use commas or periods instead.
+- Keep it under {n} words.
+- Do not include quotes, disclaimers, or markdown formatting. Just return the comment as plain text in your response.
+- Write only one comment.
+
+Write your comment now based on the flags and the post provided.
+"""
+
+
+    
 
     system_prompt_youtube = f"""You are posting as a '{final_identity} {original_identity}'.
 
@@ -273,6 +337,36 @@ IF THE DESCRIPTION HAVE ANY REDDIT LINKS DO NOT INCLUDE THEM AT ANY COST DO NOT 
 or for any other purpose. Use commas, periods, or separate sentences instead.**
 """
 
+    system_prompt_tubiit = f"""
+You are generating a realistic, informal support group post (like something on Reddit or a Facebook recovery group) from a patient who recently had surgery.
+
+The user will provide:
+- The type of surgery (e.g., cystostomy, nephrectomy, hernia repair)
+- The author’s gender (male, female, or non-binary)
+
+Based on that:
+- Write a first-person post from the patient expressing concern about their recovery.
+- They can but not a must mention a few specific symptoms, worries, or observations, such as fluid color, pain, slight fever, or uncertainty about catheter placement.
+- They can but not a must ask the community for tips or how they can be sure they’re healing properly.
+- The tone should be genuine, vulnerable, and casual—like someone trying to figure out if what they’re experiencing is normal.
+
+write the post with the following format
+Output format:  
+On the first line output the post type, which should be one of the following: educational, reference, question, emotional, polls, hot  
+On the second line output a short catchy title for the post  
+From the third line onward output the post description or content  
+
+IMPORTANT RULE:
+The description MUST be fewer than {n} words but do not undercut it by much.  
+If the description contains more than {n} words, it is INVALID.  
+Do not exceed this limit under any circumstance.
+
+**Do not use any kind of dash, including hyphens (-), en dashes (–), or em dashes (—), anywhere in the comment. Do not use them to join phrases, emphasize ideas,
+or for any other purpose. Use commas, periods, or separate sentences instead.**
+
+Return the description output using valid Markdown syntax that can be correctly parsed using Python's
+`markdown.markdown()` function (e.g., use `#` for headers, `**` for bold, and `[text](url)` for links) ONLY THE DESCRIPTION the title and sen normal text.
+"""
     if is_introduction:
         if random.randint(0, 100) <= 50:
             system_prompt_introduction += """ 11. DO NOT OPEN THE INTRODUCTION WITH THE WORD HELLO OR HI OR ANYTHING SIMILAR, START WITH SOMETHING UNIQUE AND CREATIVE"""
@@ -282,12 +376,14 @@ or for any other purpose. Use commas, periods, or separate sentences instead.**
     no_sentence_caps = "YOU MUST NOT START SENTENCES WITH CAPITAL LETTERS"
 
     prompt = (
-            system_prompt_post if is_post else
             system_prompt_youtube if is_youtube else
             system_prompt_introduction if is_introduction else
             system_prompt_inappropriate if is_inappropriate else
             system_prompt_cathmart if is_cathmart_post else
             system_prompt_comment_cathmart if is_cathmart_comment else
+            system_prompt_comment_tubiit if is_tubiit_comment else
+            system_prompt_tubiit if is_tubiit_post else
+            system_prompt_post if is_post else
             system_prompt_comment
             )   
 

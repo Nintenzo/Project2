@@ -51,7 +51,7 @@ Introduction Template: {template}
             print('No member turns today')
 
 schedule.every().day.at("04:00").do(main)
-main()
+
 while True:
     schedule.run_pending()
     time.sleep(60)

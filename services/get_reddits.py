@@ -2,13 +2,15 @@ from settings.spaces_keywords import subreddits
 #from services.db_service import get_users_count
 import random
 
+min_post = 20       # CHANGE IF NEEDED
+max_post = 60       # CHANGE IF NEEDED
 
 def get_subs():
     # users = get_users_count()
     # daily_posts = max(8, min(15, users // 800))
     # variation = random.choice([-3, -2, -1, 0, 1, 2, 3])
     # daily_posts = max(6, min(15, daily_posts + variation))
-    daily_posts = random.randint(20, 60)
+    daily_posts = random.randint(min_post, max_post)
     high_traffic = [name for name, data in subreddits.items() if data["traffic"] == "high"]
     mid_traffic = [name for name, data in subreddits.items() if data["traffic"] == "mid"]
     low_traffic = [name for name, data in subreddits.items() if data["traffic"] == "low"]
