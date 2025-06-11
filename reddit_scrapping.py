@@ -132,7 +132,7 @@ def main():
                             chance = random.randint(0, 100)
                             if chance <= 1:
                                 is_inappropriate = True
-                            elif chance <= 6:
+                            elif chance <= 4:
                                 chance = random.randint(0, 100)
                                 if chance >= 50:
                                     is_cathmart_post = True

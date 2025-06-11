@@ -178,7 +178,7 @@ def fetch_posts(intro=False):
 	introduction_space_id = os.getenv('INTRODUCTION_SPACE_ID')
 	conn, cursor = create_post_db()
 
-	cursor.execute(f"""SELECT post_id, space_id, needed_likes, needed_comments FROM posts WHERE last_updated <= '{datetime.now().date()}'""")
+	cursor.execute(f"""SELECT post_id, space_id, needed_likes, needed_comments FROM posts WHERE last_updated < '{datetime.now().date()}'""")
 	all_posts = cursor.fetchall()
 
 	filtered_posts = []
