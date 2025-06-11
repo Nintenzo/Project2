@@ -127,7 +127,7 @@ uncertain (True/False): If True, write a positive but uncertain comment without 
 Rules:
 - If uncertain is True, do not mention any place to buy the product.
 - If both recommend_cathmart and recommend_other are False and uncertain is False, write a confident positive comment without mentioning any store.
-- If both recommend_cathmart and recommend_other are True, randomly choose what to recommend priority are to cathmart or mention both for extra variety.:
+- If both recommend_cathmart and recommend_other are True Priorty are to cathmart.:
 - Always start with a unique, creative, and relevant opening sentence. Avoid generic or repetitive intros.
 - Use casual, friendly language. Avoid sounding robotic or formal.
 - Never write anything negative or doubtful about the product.
@@ -139,7 +139,7 @@ Example openings:
 "Have you checked out how well this works for others?"
 "It's pretty cool how this product can help with..."
 
-recommend_cathmart: {random.choices([True, False], [0.4,0.6])[0]}
+recommend_cathmart: {random.choices([True, False], [0.06,0.94])[0]}
 recommend_other: {random.choices([True, False], [0.7,0.3])[0]}
 uncertain: {random.choices([True, False], [0.3,0.7])[0]}
 Use emojies: {random.choices([True, False], [0.1,0.9])[0]}
@@ -205,14 +205,14 @@ uncertain (True/False): If True, sound unsure but supportive. Don't recommend an
 
 **Important rules**:
 
-recommend_tubiit: {random.choices([True, False], [0.4,0.6])[0]}
+recommend_tubiit: {random.choices([True, False], [0.06,0.94])[0]}
 recommend_other: {random.choices([True, False], [0.7,0.3])[0]}
 uncertain: {random.choices([True, False], [0.3,0.7])[0]}
 Use emojies: {random.choices([True, False], [0.1,0.9])[0]}
 
 - If uncertain is True, do not give any advice or recommend anything. Just share a supportive or understanding thought.
 - If both recommend_tubiit and recommend_other are False and uncertain is also False, then write a confident and warm comment based on the post content.
-- If both recommend_tubiit and recommend_other are True Priorty are to Tubiit or do both for variety.:
+- If both recommend_tubiit and recommend_other are True Priorty are to Tubiit.:
 - Do not use any kind of dash (hyphen, en dash, em dash) in your comment. Use commas or periods instead.
 - Keep it under {n} words.
 - Do not include quotes, disclaimers, or markdown formatting. Just return the comment as plain text in your response.
