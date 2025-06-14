@@ -83,7 +83,7 @@ def main():
                     keyword = random.choice(keywords)
                     chance = random.randint(10,15)
                     reddit_chance = 100 - chance
-                    res = random.randint(0,2)
+                    res = random.randint(0, 100)
                     print(f"Searching keyword: {keyword}")
                     for post in subreddit.search(keyword, sort=random.choice(["new", "relevance"])):
                         is_inappropriate = False
@@ -109,7 +109,6 @@ def main():
                             gallery_data = gallery(post)
                             startwith = ("https://www.reddit.com", "https://v.redd.it/")
                             valid_image_extensions = ('jpg','jpeg','tiff','png','gif','bmp', 'mp4', 'webm' ,'ogg', 'gifv')
-
                             if len(original_description) <= 5 and external_link.endswith(valid_image_extensions) or \
                                 len(original_description) <= 5 and external_link == None or \
                                 len(original_description) <= 5 and external_link.find('redd') != -1 or \
@@ -132,12 +131,15 @@ def main():
                             chance = random.randint(0, 100)
                             if chance <= 1:
                                 is_inappropriate = True
+                                reddit_link = "inappropriate"
                             elif chance <= 4:
                                 chance = random.randint(0, 100)
                                 if chance >= 50:
                                     is_cathmart_post = True
+                                    reddit_link = "cathmart"
                                 else: 
                                     is_tubiit_post = True
+                                    reddit_link = "tubiit"
                         else:
                             youtube = True
                             content = get_yt_link(keyword=keyword)
@@ -150,7 +152,9 @@ def main():
                                 continue
 
                             print(f"Processing and Posting to Circle using email: {random_email}...")
-                            if not youtube:
+                            if not youtube:      # REMOVE IF NEED TO SCRAP PICTURES/VIDEOS
+                                if gallery_data: # REMOVE IF NEED TO SCRAP PICTURES/VIDEOS
+                                    continue     # REMOVE IF NEED TO SCRAP PICTURES/VIDEOS
                                 status = create_post(
                                     space_id = space_id,
                                     email = random_email,

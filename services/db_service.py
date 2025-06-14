@@ -87,13 +87,16 @@ def update_introduction(email):
 
 def update_inappropriate(post_id):
     conn, cursor = create_post_db()
-    cursor.execute("""
+    array = json.dumps([])
+    cursor.execute(f"""
                 UPDATE posts
-                SET post_category = 'done', needed_likes = 0, needed_comments = 0
+                SET post_category = 'done', needed_likes = '{array}', needed_comments = '{array}'
                 WHERE post_id = ?
             """, (post_id,))
     conn.commit()
     print('Category Updated')
+
+
 def create_db_space():
     conn = sqlite3.connect("spaces.db")
     cursor = conn.cursor()
@@ -313,12 +316,12 @@ def update_cookies(remember_user_token, user_session_identifier, email):
     return
 
 
-def get_random_user_email():
+def get_random_user_email(column_name="email", limit=1):
     """Fetches a random email from the users table."""
     try:
         conn, cursor = create_db_users()
         cursor = conn.cursor()
-        cursor.execute("SELECT email FROM users ORDER BY RANDOM() LIMIT 1")
+        cursor.execute(f"SELECT {column_name} FROM users ORDER BY RANDOM() LIMIT ?", (limit,))
         result = cursor.fetchone()
         if result:
             return result[0]
@@ -331,6 +334,7 @@ def get_random_user_email():
     finally:
         if conn:
             conn.close()
+
 
             
 def delete_post(post_id):

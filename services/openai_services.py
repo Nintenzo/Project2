@@ -4,7 +4,7 @@ import openai
 import openai.error
 load_dotenv()
 
-def send_prompt(system_prompt, message, model):
+def send_prompt(system_prompt, message, model="gpt-4o-mini"):
     openai.api_key = os.getenv("GPT_KEY")
     try:
         response = openai.ChatCompletion.create(

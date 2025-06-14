@@ -1,20 +1,26 @@
 import tls_client
+import random
 from services.seen_service import fresh_cookies
+from services.sgid_service import get_sgid
+from services.db_service import get_random_user_email
+import os
+from dotenv import load_dotenv
 
-
+load_dotenv()
+base_link = os.getenv("COMMUNITY_LINK")
 def like_with_no_api(email, post_id, remove=False):
     cookies = fresh_cookies(email)
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-        "Referer": "https://tubiit.circle.so/",
-        "Origin": "https://tubiit.circle.so",
+        "Referer": base_link,
+        "Origin": base_link,
         "Content-Type": "application/json"
     }
 
     session = tls_client.Session(client_identifier="chrome_120")
 
     response = session.post(
-        "https://tubiit.circle.so/user_likes?",
+        f"{base_link}/user_likes?",
         headers=headers,
         cookies=cookies,
         json={
@@ -25,7 +31,7 @@ def like_with_no_api(email, post_id, remove=False):
 
     if remove:
         response = session.delete(
-			"https://tubiit.circle.so/user_likes?",
+			f"{base_link}/user_likes?",
 			headers=headers,
 			cookies=cookies,
 			json={
@@ -41,17 +47,23 @@ def like_with_no_api(email, post_id, remove=False):
         raise Exception('post not liked')
 
 
-def comment_with_no_api(email, post_id, comment):
+def comment_with_no_api(email, post_id, comment, mention=False):
     cookies = fresh_cookies(email)
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-        "Referer": "https://tubiit.circle.so/",
-        "Origin": "https://tubiit.circle.so",
+        "Referer": f"{base_link}/",
+        "Origin": base_link,
         "Content-Type": "application/json"
     }
     session = tls_client.Session(client_identifier="chrome_120")
+    if mention:
+        name = get_random_user_email(column_name="name")
+        sgid = get_sgid(name)
+        comment = f" {comment}"
+    else:
+        sgid = ""
     response = session.post(
-        f"https://tubiit.circle.so/internal_api/posts/{post_id}/comments?",
+        f"{base_link}/internal_api/posts/{post_id}/comments?",
         headers=headers,
         cookies=cookies,
         json={
@@ -64,6 +76,12 @@ def comment_with_no_api(email, post_id, comment):
                                 "type": "paragraph",
                                 "content": [
                                     {
+                                        "type": "mention",
+                                        "attrs": {
+                                            "sgid": sgid
+                                        }
+                                    },
+                                    {
                                         "type": "text",
                                         "text": comment
                                     }
@@ -71,9 +89,10 @@ def comment_with_no_api(email, post_id, comment):
                             }
                         ]
                     }
+                    }
                 }
             }
-        }
+        
     )
     if response.status_code == 201:
         session.close()

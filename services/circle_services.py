@@ -25,8 +25,10 @@ days = 10
 
 def send_to_gpt(name, message, final_identity, original_identity, is_inappropriate=False, author_gender=None, is_youtube=False, is_post=False, n=30,
                 previous_openings=None, link=None, post_id=None, is_introduction=False, is_cathmart_post=False, is_cathmart_comment=False,
-                is_tubiit_post=False, is_tubiit_comment=False, model="gpt-4o-mini"):
+                is_tubiit_post=False, is_tubiit_comment=False, is_mention_comment=False, model="gpt-4o-mini"):
+    
     system_prompt = get_system_prompt(
+        is_mention_comment=is_mention_comment,
         is_tubiit_comment=is_tubiit_comment,
         is_cathmart_comment=is_cathmart_comment,
         is_cathmart_post=is_cathmart_post,
@@ -106,6 +108,25 @@ def like_post(post_id, email):
 #     return response.json()
 
 
+
+def split_descending(total, days):
+	if days < 1:
+		return []
+	if days == 1:
+		return [total]
+	first_day_value = round(total * 0.7)
+	remaining_total = total - first_day_value
+	remaining_days = days - 1
+	weights = list(range(remaining_days, 0, -1))
+	total_weight = sum(weights)
+	percentages = [w / total_weight for w in weights]
+	remaining_split = [round(remaining_total * p) for p in percentages]
+	diff = remaining_total - sum(remaining_split)
+	remaining_split[-1] += diff
+    
+	return [first_day_value] + remaining_split
+
+
 def comment_on_post(space_id, post_id, user_email, previous_openings=None):
     """
     This function comments on a post.
@@ -123,22 +144,42 @@ def comment_on_post(space_id, post_id, user_email, previous_openings=None):
     final_identity = member_data[0][1]
     original_identity = member_data[0][2]
     role = member_data[0][3]
+    mention = False
     title = post_data[2]
     description = post_data[3]
-    
     message = f"""
 Title: {title}
 Description: {description}
 """
+    mention_chance = random.randint(0, 100)
     if post_category == "introduction":
         message = f"""
         This is a post of someone introducing himself to the tubiit hubs community , please write a comment that is related to the that DO NOT USE EMOJIES.
         Title: {title}
         Description: {description}
         """
-    if post_category == "cathmart":
+    
+    # elif mention_chance <= 3 and post_category != "introduction":
+    #     mention = True
+    #     if mention_chance <= 50:
+    #         body = send_to_gpt(
+    #             model="gpt-4o-mini",
+    #             is_mention_comment=True,
+    #             author_gender=author_gender,
+    #             name=name,
+    #             message=message,
+    #             is_post=False,
+    #             final_identity=final_identity,
+    #             original_identity=original_identity,
+    #             n=random.randint(1, 20),
+    #             previous_openings=previous_openings,
+    #             post_id=post_id
+    #         )[0]
+    #     else:
+    #         body = ""
+    elif post_category == "cathmart":
         body = send_to_gpt(
-            model="gpt-4.1-nano",
+            model="gpt-4o-mini",
             is_cathmart_comment=True,
             author_gender=author_gender,
             name=name,
@@ -152,7 +193,7 @@ Description: {description}
         )[0]
     elif post_category == "tubiit":
         body = send_to_gpt(
-            model="gpt-4.1-nano",
+            model="gpt-4o-mini",
             is_tubiit_comment=True,
             author_gender=author_gender,
             name=name,
@@ -166,7 +207,7 @@ Description: {description}
         )[0]
     else:
         body = send_to_gpt(
-            model="gpt-4.1-nano",
+            model="gpt-4o-mini",
             author_gender=author_gender,
             name=name,
             message=message,
@@ -184,7 +225,7 @@ Description: {description}
                "body": body,
                "user_email": user_email}
     try:
-        response = comment_with_no_api(email=user_email, post_id=post_id, comment=body)
+        response = comment_with_no_api(email=user_email, post_id=post_id, comment=body, mention=mention)
         print("comment created with no api call")
         return body
     except Exception:
@@ -374,7 +415,6 @@ type: {type}"""
             original_identity=original_identity,
             n=random.randint(200, 500)
         )
-    
     html_output = markdown.markdown(description)
     payload = {
                 "space_id": space_id,
@@ -399,12 +439,15 @@ type: {type}"""
     elif html:
         payload["internal_custom_html"] = f"{html_output}\n"
 
-    if is_youtube:
+    if is_youtube: # REMOVE THIS LINE IF NEED TO SCRAP PICTURES/VIDEOS
         payload["internal_custom_html"] += f''.join(f'{ht}\n' for ht in html)
             
     if not title:
+        if is_inappropriate:
+            return "false"
         payload["body"] = description
         payload["internal_custom_html"] = ""
+        #payload["internal_custom_html"] += f''.join(f'{ht}\n' for ht in html) UNCOMMENT THIS LINE IF NEED TO SCRAP PICTURES/VIDEOS
         
     if description == external_link and external_link.strip().startswith('http'):
         payload["internal_custom_html"] = f"<a href={external_link}>{external_link}</a>"
@@ -444,14 +487,10 @@ Post Description: {description}
 ************************************************************
 Transcript: {original_description}
 """
-            
-        split_likes = needed_likes // days
-        split_comments = needed_comments // days
-        likes_arr = []
-        comments_arr = []
-        for x in range(days):
-            likes_arr.append(split_likes)
-            comments_arr.append(split_comments)
+     
+
+        likes_arr = split_descending(needed_likes, days)
+        comments_arr = split_descending(needed_comments, days)
         needed_likes = json.dumps(likes_arr)
         needed_comments = json.dumps(comments_arr)
         insert_post(email, original_title, original_description, title, description, post_id, space_id, url, needed_likes=needed_likes, needed_comments=needed_comments, post_category=post_category)

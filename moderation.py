@@ -1,5 +1,5 @@
 from services.db_service import fetch_inappropriate_posts, get_member_info, update_inappropriate
-from services.like_comments_with_no_api import comment_with_no_api
+from services.like_comments_with_no_api import comment_with_no_api, base_link
 from services.openai_services import send_prompt
 from dotenv import load_dotenv
 import requests
@@ -31,7 +31,7 @@ mods = [ # must manually add the mods email
 
 
 def mod_comment(post_id, body, user_email):
-    url = "https://app.circle.so/api/v1/comments?"
+    url = f"{base_link}/api/v1/comments?"
     payload = {"community_id": community_id,
                "post_id": post_id,
                "body": body,
@@ -56,7 +56,7 @@ def mod_comment(post_id, body, user_email):
 
 def update_posts(post_data, moderator):
     post_id = post_data[-1]
-    link = f"https://app.circle.so/api/v1/posts/{post_id}"
+    link = f"{base_link}/api/v1/posts/{post_id}"
     comment = "Your post violates our community guidelines — please review the rules to avoid further action."
     mod_comment(post_id, comment, moderator[0])
     title = post_data[1]

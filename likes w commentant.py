@@ -43,7 +43,7 @@ def like_comment_sum(posts):
         else:
             total_comments += 0
     total_interactions = total_likes + total_comments
-    hour = (sleep_until_4am() / 60 / 60 ) - 6
+    hour = (sleep_until_4am() / 60 / 60 ) - 10
     if hour <= 0:
         hour = 1
     total_time_seconds = hour * 60 * 60
@@ -60,6 +60,7 @@ while True:
         if len(posts) >= 1:
             average_sleep_time = like_comment_sum(posts)
             for x in random.sample(posts, len(posts)):
+                x = posts[-1]
                 if asizeof(previous_openings) > CAP:
                     previous_openings = {}
                 email = get_random_user_email()
@@ -97,6 +98,8 @@ while True:
                         if post_id not in previous_openings:
                             previous_openings[post_id] = []
                         previous_openings[post_id].append(opening)
+                        if len(previous_openings[post_id]) >= 30:
+                            previous_openings[post_id] = []
                     decrement_likes_comments(post_id, "needed_comments")
                     print(average_sleep_time)
                     time.sleep(average_sleep_time)
@@ -135,7 +138,6 @@ while True:
             gc.collect()
                 
         else:
-            previous_openings = {}
             print(datetime.now())
             time.sleep(3600)
     except Exception as e:

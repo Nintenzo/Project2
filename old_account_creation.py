@@ -381,7 +381,7 @@ def get_mail_and_code(driver, wait, get_code=False):
         return None
 
 def activate_user_selenium(driver, wait, email, password, mail_window, circle_window):
-    global accounts_created_count, count
+    global accounts_created_count
 
     try:
         print(f"Thread {threading.get_ident()}: Activating account for {email}...")
